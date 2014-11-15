@@ -3,6 +3,7 @@
 from utilities.logMsg import logMsg
 import os
 import re
+import sys
 
 # CLASS DEFINITION
 class Batch(object):
@@ -30,31 +31,33 @@ class Batch(object):
     - createCsvSongListing(): Writes a Comma-Separated-Values file of the song information.
     """
     
-    def __init__(self, batchPath, batchName, batchOutputFile):
+    def __init__(self, batchPath):
         '''
         Constructor
         '''
         self.path = batchPath
-        self.name = batchName
-        self.outputFile = str(batchOutputFile) + ".csv"
+        # self.name = batchName
+        self.name = os.path.basename(os.path.normpath(batchPath))
+        self.outputFile = self.name + ".csv"
         self.batchFiles = []
         self.smFileFields = []
         self.dwiFileFields = []
         self.songFolderInfo = {}
 
     def dumpInfo(self):
-        print(logMsg("LINEPARSE","INFO"),"dumpInfo: Dumping Batch Info")
-        print("BATCH PATH:", self.path,
-              "\nBATCH NAME:", self.name,
-              "\nSM FIELDS:", self.smFileFields,
-              "\nDWI FIELDS:", self.dwiFileFields)
+        print(logMsg("BATCH","INFO"),"dumpInfo: Dumping Batch Info")
+        print("- BATCH PATH:", self.path,
+              "\n- BATCH NAME:", self.name,
+              "\n- OUTPUT FILE:", self.outputFile,
+              "\n- SM FIELDS:", self.smFileFields,
+              "\n- DWI FIELDS:", self.dwiFileFields)
 
     def getBatchFileListing(self):
-        print(logMsg("LINEPARSE","INFO"),"getBatchFileListing: Attempting to get song listing in '" + self.path + "'")
+        print(logMsg("BATCH","INFO"),"getBatchFileListing: Attempting to get song listing in '" + self.path + "'")
         try:
             self.batchFiles = os.listdir(self.path)
         except:
-            print(logMsg("LINEPARSE","ERROR"),"getBatchFileListing: Could not list files, check to see if directory exists")
+            print(logMsg("BATCH","ERROR"), "getBatchFileListing: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
     def setSmFileFields(self,fieldList):
         self.smFileFields = fieldList
@@ -68,7 +71,7 @@ class Batch(object):
         - sm
         - dwi
         """
-        print(logMsg("LINEPARSE","INFO"),"parseChartFile: Attempting to parse chart file '" + chartFile + "'")
+        print(logMsg("BATCH","INFO"),"parseChartFile: Attempting to parse chart file '" + chartFile + "'")
         os.chdir(chartFolder) # Change to song folder's context in the batch
         songFieldInfo = {}
 
@@ -124,7 +127,8 @@ class Batch(object):
                     self.songFolderInfo[songFolder] = songInfo
 
             except:
-                print(logMsg("LINEPARSE","ERROR"),"getSongInfo: Error parsing file information for ", file)
+                print(logMsg("BATCH","ERROR"), "getSongInfo: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+                # print(logMsg("BATCH","ERROR"),"getSongInfo: Error parsing file information for ", file)
             
     def parseSongs(self):
         """
@@ -132,18 +136,18 @@ class Batch(object):
         However since not every file in the batch could be a folder, keep file cases in mind
         """
         if self.batchFiles != []:
-            print(logMsg("LINEPARSE","INFO"),"parseSongs: Looking through batch files")
+            print(logMsg("BATCH","INFO"),"parseSongs: Looking through batch files")
             for folder in self.batchFiles:
                 try:
                     self.getSongInfo(folder)
                 except:
-                    print(logMsg("LINEPARSE","ERROR"),"parseSongs: Something went wrong with '" + folder + "'")
+                    print(logMsg("BATCH","ERROR"), "parseSongs: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
     def printSongInfo(self):
         """
         Prints any songs that were parsed.
         """
-        print(logMsg("LINEPARSE","INFO"),"printSongInfo: Printing out parsed songs")
+        print(logMsg("BATCH","INFO"),"printSongInfo: Printing out parsed songs")
         for folder in self.songFolderInfo.keys():
             print(folder,"-->",self.songFolderInfo[folder])
 
@@ -155,25 +159,30 @@ class Batch(object):
 
     def createCsvSongListing(self):
         try:
-            print(logMsg("LINEPARSE","INFO"),"createCsvSongListing: Attempting to write CSV File '" + self.outputFile + "'")
+            print(logMsg("BATCH","INFO"),"createCsvSongListing: Attempting to write CSV File '" + self.outputFile + "'")
             os.chdir(self.path) # Change to batch directory context
+            sortedFolders = sorted(self.songFolderInfo.keys(), key=str.lower)
+            # print(logMsg("BATCH","INFO"),"createCsvSongListing: sortedFolders:", sortedFolders)
+            sortedSongFields = sorted(self.songFolderInfo[sortedFolders[0]].keys(), key=str.lower)
+            # print(logMsg("BATCH","INFO"),"createCsvSongListing: sortedSongFields:", sortedSongFields)
             header = "[FOLDER]"
-            for field in self.smFileFields:
+            for field in sortedSongFields:
                 header += ",[" + field + "]"
+            # print(logMsg("BATCH","INFO"),"createCsvSongListing: header", header)
             with open(self.outputFile, 'w') as batchInfo:
                 batchInfo.write(header+"\n")
-                for folder in self.songFolderInfo.keys():
+                for folder in sortedFolders:
                     folderWithoutCommas = folder + ","
                     folderWithoutCommas = re.sub(',', ' ', folderWithoutCommas)
                     songInfoString = folderWithoutCommas
-                    for songField in self.songFolderInfo[folder].keys():
+                    for songField in sortedSongFields:
                         fieldWithoutCommas = self.songFolderInfo[folder][songField] + ","
                         fieldWithoutCommas = re.sub(',', ' ', fieldWithoutCommas)
                         songInfoString += "," + fieldWithoutCommas
                     batchInfo.write(songInfoString+"\n")
             batchInfo.close()
         except:
-            print(logMsg("LINEPARSE","ERROR"),"createCsvSongListing: Something went wrong writing the file")
+            print(logMsg("BATCH","ERROR"), "createCsvSongListing: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
         
     
 # MAIN
@@ -181,9 +190,7 @@ if __name__ == "__main__":
 
     # Create Batch Object.
     batchPath = input("Input directory to Batch Folder: ")
-    batchName = input("Input Name of Batch: ")
-    batchOutputFile = input("Input Output CSV File: ")
-    batchContainer = Batch(batchPath,batchName,batchOutputFile)
+    batchContainer = Batch(batchPath)
     batchContainer.setSmFileFields(['TITLE','ARTIST'])
     batchContainer.setDwiFileFields(['TITLE','ARTIST'])
     batchContainer.dumpInfo()

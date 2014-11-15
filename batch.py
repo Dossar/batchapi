@@ -23,6 +23,7 @@ class Batch(object):
     - setSmFileFields(): Sets list of fields to search for in an .sm file
     - setDwiFileFields(): Sets list of fields to search for in a .dwi file
     - parseChartFile(): Tries parsing fields specified for either a dwi or sm file.
+    - getStepArtistFromFolder(): Parses stepartist from a passed folder (just name of folder itself). 
     - getSongInfo(): Retrieves song information for a specified folder in the batch directory.
     - parseSongs(): Goes through every folder in the batch directory to find song information.
     - printSongInfo(): Prints out any successfully parsed information.
@@ -32,11 +33,10 @@ class Batch(object):
     """
     
     def __init__(self, batchPath):
-        '''
+        """
         Constructor
-        '''
+        """
         self.path = batchPath
-        # self.name = batchName
         self.name = os.path.basename(os.path.normpath(batchPath))
         self.outputFile = self.name + ".csv"
         self.batchFiles = []
@@ -67,9 +67,14 @@ class Batch(object):
 
     def parseChartFile(self,chartFolder,chartFile,chartType):
         """
+        chartFolder is the full path to the folder.
+
         chartType should be one of:
         - sm
         - dwi
+
+        Note that stepartists will be obtained from the folder name. Do not look
+        inside the chart file for the stepartist.
         """
         print(logMsg("BATCH","INFO"),"parseChartFile: Attempting to parse chart file '" + chartFile + "'")
         os.chdir(chartFolder) # Change to song folder's context in the batch
@@ -81,9 +86,12 @@ class Batch(object):
                 for line in smFile:
                     if line.startswith('#'):
                         for field in self.smFileFields:
-                            fieldSearch = re.search("^#"+field+":(.*);$",line)
-                            if fieldSearch != None:
-                                songFieldInfo[field] = fieldSearch.group(1)
+                            if field == "STEPARTIST":
+                                continue
+                            else:
+                                fieldSearch = re.search("^#"+field+":(.*);$",line)
+                                if fieldSearch != None:
+                                    songFieldInfo[field] = fieldSearch.group(1)
                     else:
                         break # No more hashtags means we're done with the song info at the top
 
@@ -93,18 +101,48 @@ class Batch(object):
                 for line in dwiFile:
                     if line.startswith('#'):
                         for field in self.dwiFileFields:
-                            fieldSearch = re.search("^#"+field+":(.*);$",line)
-                            if fieldSearch != None:
-                                songFieldInfo[field] = fieldSearch.group(1)
+                            if field == "STEPARTIST":
+                                continue
+                            else:
+                                fieldSearch = re.search("^#"+field+":(.*);$",line)
+                                if fieldSearch != None:
+                                    songFieldInfo[field] = fieldSearch.group(1)
                     else:
                         break # No more hashtags means we're done with the song info at the top
 
-        return songFieldInfo # This works
+        # Get stepartist information after parsing any song information.
+        if 'STEPARTIST' in self.smFileFields:
+            folderName = os.path.basename(os.path.normpath(chartFolder))
+            stepper = self.getStepArtistFromFolder(folderName)
+            songFieldInfo['STEPARTIST'] = stepper
+
+        return songFieldInfo # Dictionary of file fields
+
+    def getStepArtistFromFolder(self,folder):
+        """
+        folder is the name of the folder by itself.
+        """
+        
+        # group(1) here refers to the captured field. Parse stepartist from song folder.
+        print(logMsg("BATCH","INFO"),"getStepArtistFromFolder: Retrieving stepartist from folder '" + folder + "'")
+        try:
+            parenthesesArtist = re.search(".*\[(.*)\]$",folder)
+            bracketArtist = re.search(".*\((.*)\)$",folder)
+            if parenthesesArtist != None:
+                stepArtist = parenthesesArtist.group(1) # Stepartist with parentheses
+            if bracketArtist != None:
+                stepArtist = bracketArtist.group(1) # Stepartist with brackets
+        except:
+            print(logMsg("BATCH","ERROR"), "getStepArtistFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            stepArtist = ""
+
+        return stepArtist
 
     def getSongInfo(self,songFolder):
         """
         songFolder is the name of the folder by itself. It will be turned into the full file path
         """
+        
         os.chdir(self.path) # Change to batch directory context
         songFolderFiles = os.listdir(songFolder)
         for file in songFolderFiles:
@@ -128,8 +166,7 @@ class Batch(object):
 
             except:
                 print(logMsg("BATCH","ERROR"), "getSongInfo: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
-                # print(logMsg("BATCH","ERROR"),"getSongInfo: Error parsing file information for ", file)
-            
+
     def parseSongs(self):
         """
         songFolder is the name of the folder by itself. It will be turned into the full file path
@@ -162,25 +199,27 @@ class Batch(object):
             print(logMsg("BATCH","INFO"),"createCsvSongListing: Attempting to write CSV File '" + self.outputFile + "'")
             os.chdir(self.path) # Change to batch directory context
             sortedFolders = sorted(self.songFolderInfo.keys(), key=str.lower)
-            # print(logMsg("BATCH","INFO"),"createCsvSongListing: sortedFolders:", sortedFolders)
             sortedSongFields = sorted(self.songFolderInfo[sortedFolders[0]].keys(), key=str.lower)
-            # print(logMsg("BATCH","INFO"),"createCsvSongListing: sortedSongFields:", sortedSongFields)
             header = "[FOLDER]"
+
+            # Create first row string in CSV file specifying the fields in the columns.
             for field in sortedSongFields:
                 header += ",[" + field + "]"
-            # print(logMsg("BATCH","INFO"),"createCsvSongListing: header", header)
+
+            # Write header out to file, then write information for all parsed songs.
             with open(self.outputFile, 'w') as batchInfo:
                 batchInfo.write(header+"\n")
                 for folder in sortedFolders:
                     folderWithoutCommas = folder + ","
-                    folderWithoutCommas = re.sub(',', ' ', folderWithoutCommas)
+                    folderWithoutCommas = re.sub(',', '', folderWithoutCommas)
                     songInfoString = folderWithoutCommas
                     for songField in sortedSongFields:
                         fieldWithoutCommas = self.songFolderInfo[folder][songField] + ","
-                        fieldWithoutCommas = re.sub(',', ' ', fieldWithoutCommas)
+                        fieldWithoutCommas = re.sub(',', '', fieldWithoutCommas)
                         songInfoString += "," + fieldWithoutCommas
                     batchInfo.write(songInfoString+"\n")
             batchInfo.close()
+            print(logMsg("BATCH","INFO"),"createCsvSongListing: Successfully wrote CSV File '" + self.outputFile + "'")
         except:
             print(logMsg("BATCH","ERROR"), "createCsvSongListing: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
         
@@ -191,8 +230,8 @@ if __name__ == "__main__":
     # Create Batch Object.
     batchPath = input("Input directory to Batch Folder: ")
     batchContainer = Batch(batchPath)
-    batchContainer.setSmFileFields(['TITLE','ARTIST'])
-    batchContainer.setDwiFileFields(['TITLE','ARTIST'])
+    batchContainer.setSmFileFields(['TITLE','ARTIST','STEPARTIST'])
+    batchContainer.setDwiFileFields(['TITLE','ARTIST','STEPARTIST'])
     batchContainer.dumpInfo()
     batchContainer.getBatchFileListing()
     batchContainer.parseSongs()

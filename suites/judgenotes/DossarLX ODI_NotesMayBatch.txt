@@ -83,6 +83,10 @@ Note: 50% this time, so Goddess Gagged to Saffron City
 - 151.13: Missing jumps here
 - 152.07: This is a bit of a convoluted mess. A focus on the piano here would work better and then switch back to the percussion. There's a lot of weird 8th jack and one handed patterns that don't fit the song as a result of all the jumps taking up the space
 
+[10/10] [Snowman And Sunshine Girl] -Terror From Beyond- (SuperRemix Gimmix) {expressive} {Digital Explosion}
+- First 10/10 test
+- Better work
+
 [4/10] {~-Zero-~} =PLANET KARMA= ^_^ [superultrabrutal] (yes) endOfSongTitle {obscureArtist} (badStepper)
 - Test to see curly braces can be in song title and not interfere with artist.
 - should work

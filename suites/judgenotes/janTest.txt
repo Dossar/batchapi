@@ -1,0 +1,92 @@
+DossarLX ODI - Group 1
+
+
+Note: 50% this time, so Goddess Gagged to Saffron City
+
+
+[6/10] Goddess Gagged {Protest The Hero}
+- 23.98: Stepping a straight trill here plays awkwardly because the drums aren't played the same here; for instance, you can hear 8th triplets on the higher snare etc. the point is there are straight trills to varying sounds
+- 29.34: Does a guy screaming really warrant a quad here
+- Also starting at 29.34 I'm not quite sure what the jumps are supposed to be doing, because right now it looks like you are missing a lot of 4th jumps to the percussion while the guitar is playing 16th notes.
+- 34.69: Yes, I get this offsetted placement is going to the "wah" guitar sound, but it's so insignificant and unwarranted it's actually annoying
+- 39.25: Ghost note
+- 42.91: Being a higher snare, this makes no sense being a lower column than the bass pedal kicks (stepped as up)
+- 43.71: Ghost note
+- 53.27, 58.98, etc.: See 34.69
+- 96.52: This part is a mess. Why did you make the BPM 88 here? You're basically forcing yourself to step 28ths here when that's not even needed at all, this is just a quantization issue from a different BPM
+- 107.50, 112.72, 116.06: What are these offsetted notes going to?
+- 124.50 to 129.50: Confusing layering. After the guitar is seen to be layered in for the jumps, but in this section it's ambiguous
+- 133.62: This offsetted jump is just obnoxious, the layering has been strictly ignoring the lyrics this entire time and something could have been done with the lyrics for layering by this point. The file is pretty bland when there are opportunities to follow the vocals.
+- 140.95 to 148.18: Offsetting as 64ths is too much. These have a good chance of being 1 frame off.
+- Rather than having all those color notes spread out around the vocals, you can try something different with the layering.
+- 173.45: Same problem as 140.95 -- offsetting by a 64th is too much
+- 191.82: This is a density spam that doesn't seem to make sense, calm down on the layering
+
+[8/10] Gruntilda's Final Battle {Banjo Kazooie}
+- 90.38: Missing hand
+- 124.38: This part is basically just a huge reversing roll thing going on and it's rather uninspiring. I would recommend following Silvuh's suggestion here about stepping the horn in the same column for relevance. (October 2013)
+- 162.38: There's also the lower bass instrument playing here so this should be a hand
+- 167.38: Missing jump (it appears the 4th jumps here are layering in the lower bass instrument)
+- I looked at the previous notes about that "jack section" and it looks fine in this submission, but it certainly is a very noticeable spike. The file is mostly easy and that minijack section could be done differently, but at least it makes sense.
+
+[6.5/10] Happy Meal {Nero's Day At Disneyland} (iironiic)
+- Offset changed to -2.214
+- 12.10: This is 64ths, not the weird color stuff here. Generalizing to just a 32nd trill represents it better. This issue also appears at 113.99
+- 25.80: Missing jump
+- 27.02: 24th gallop is wrong, this is a 32nd burst starting on that 8th note and a gallop doesn't work well here
+- 35.11, 37.50: Missing notes
+- 45.11: A little bit too off, the 32nd after works better
+- 45.80: Too early. The 64th after is a 20 ms difference and it plays much better
+- 46.51, 46.61: Too early. It should be closer to something like 46.53 and 46.65 (64th, 16th respectively)
+- 48.24-48.40 is 64ths, not 48ths.
+- 49.84-49.99: 64ths, not 48ths
+- 49.40: Too early, there should be a 32nd triplet here starting on the 4th
+- Relook the slowdown sections over, I'm not going to list all the technical errors here
+- 62.57: Missing jump
+- 76.42: This is a 24th burst
+- The layering from 73.56 to 83.75 is very confusing
+- 86.61: This is a 5-note 32nd burst going into a 16th, not sure what the 24ths here are about
+- 96.80: Same problem as 86.61
+- The runningmen patterning in this section was a nice idea, but then the patterning went willy-nilly
+- 104.12: This part is really understepped when there's a bunch of other notes blasting at the user
+
+[5/10] Happy Meal {Nero's Day At Disneyland} (TomWinter)
+- Offset changed to -1.000
+- Test
+
+[6/10] Information Transmission {Xi}
+- I saw some missing notes in the beginning but they're barely noticeable so I can see why they weren't stepped
+- 15.05, 58.53: These are either just really soft notes or ghost notes
+- 27.15: Misstepped, the piano is on the 16th
+- 28.38: While the jumps can be used to accent the piano here, I think single minijacks could suffice
+- 36.10: Missing note
+- 55.12, 55.56, 57.30: Missing jumps (inconsistent with 49.04)
+- 70.01, 70.23, 72.84: Missing notes
+- 100.12 through 100.70 does not follow the piano. 100.12 through 100.56 is all 32nds, there are no 24ths here. The patterning is also erratic.
+- 101.21: Rather than having all these slow 8th jumpspams the other synth that enters here can be utilized.
+- 127.95 through 128.60 is all 32nds, not sure why there's a jump at 128.38 either
+- 129.04: There's still a lot going on here and all that is stepped is boring 8th trills. Put more effort into this ending.
+- The file is very repetitive and the patterns could be varied up more.
+
+[7.5/10] Laventale {sakuzyo}
+- 3.32 seconds of silence in the beginning?
+- 6.03, 6.44: These 8ths are different notes. Same for 9.36, 9.78
+- The above repeats again after
+- 21.24, 24.57, 27.90, 47.90, 51.24, 54.57: Noticeable missing notes to the guitar
+- 57.07: The melody has several 8th notes that you are missing many of (e.g. 57.69, 58.53, 59.36, and many more) and they're also noticeable enough, not barely audible sounds
+- 69.47: Missing jumps here
+- 91.55, 91.86: Missing jumps
+- 87.93, 94.60: These should be 64ths, not 96ths. 96ths are too fast.
+- 101.27, 107.94: 48th for this is too fast, this should be a 32nd gallop.
+- 112.90: See 21.24, goes for this entire section before the next jumpstream section
+- 125.40 and 138.74: For these sections, they share the same problem as 57.07
+- 151.13: Missing jumps here
+- 152.07: This is a bit of a convoluted mess. A focus on the piano here would work better and then switch back to the percussion. There's a lot of weird 8th jack and one handed patterns that don't fit the song as a result of all the jumps taking up the space
+
+[4/10] {~-Zero-~} =PLANET KARMA= ^_^ [superultrabrutal] (yes) endOfSongTitle {obscureArtist} (badStepper)
+- Test to see curly braces can be in song title and not interfere with artist.
+- should work
+
+[5/10] {~-Zero-~} =PLANET KARMA= ^_^ [superultrabrutal] (yes) endOfSongTitle {obscureArtist} (mediocreStepper)
+- Test to see curly braces can be in song title and not interfere with artist.
+- should work

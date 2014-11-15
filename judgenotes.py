@@ -129,7 +129,7 @@ class JudgeNotes(object):
 
     def printJudgeRatings(self):
         """
-        Print out parsed judge ratings with song info
+        Print out parsed judge ratings with song info. I wouldn't recommend using this, it's messy
         Each tuple is in the form of ([TITLE,ARTIST,STEPARTIST],rating)
         TITLE {STEPARTIST} --> [rating/10]
         """
@@ -146,21 +146,64 @@ class JudgeNotes(object):
         except:
             print(logMsg("JUDGENOTES","ERROR"), "printJudgeRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
+    def getRatingSum(self):
+        ratingSum = 0
+        for ratingTuple in self.judgedSongList:
+            ratingSum += float(ratingTuple[1]) # Get sum of all judge's ratings in the notes file.
+        return ratingSum
+
     def getJudgeAverage(self):
         """
         Figures out the average rating a judge gave.
+        Requires judgedSongList to have already been created.
         """
 
         try:
             print(logMsg("JUDGENOTES","INFO"), "getJudgeAverage: Retrieving Judge Average from '" + self.notesFile + "'")
-            ratingSum = 0
-            for ratingTuple in self.judgedSongList:
-                ratingSum += float(ratingTuple[1]) # Get sum of all judge's ratings in the notes file.
-            print(logMsg("JUDGENOTES","INFO"), "getJudgeAverage:",ratingSum,"/",self.numJudgedFiles,"=",self.average )
+            ratingSum = self.getRatingSum()
             self.average = ratingSum / self.numJudgedFiles
-                
+            print(logMsg("JUDGENOTES","INFO"), "getJudgeAverage:",ratingSum,"/",self.numJudgedFiles,"=",self.average )
         except:
             print(logMsg("JUDGENOTES","ERROR"), "getJudgeAverage: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+
+    def getRawRatings(self):
+        """
+        Retrieving raw number of songs for each rating.
+        This is done after ratingsToSongs has been created.
+
+        Each dictionary entry in ratingsToSongs looks like this:
+        'rating':[[TITLE,ARTIST,STEPARTIST],[TITLE,ARTIST,STEPARTIST],...]
+
+        Each dictionary entry in ratingsRaw looks like this:
+        'rating':<integer/number of files with rating>
+        """
+
+        try:
+            print(logMsg("JUDGENOTES","INFO"), "getRawRatings: Retrieving Raw Ratings from '" + self.notesFile + "'")
+            for rating in self.ratingsToSongs.keys():
+                numOfSongsWithRating = len(self.ratingsToSongs[rating])
+                self.ratingsRaw[rating] = numOfSongsWithRating
+
+        except:
+            print(logMsg("JUDGENOTES","ERROR"), "getRawRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+
+    def printRawRatings(self):
+        """
+        Print out just a simple listing of how many songs got a certain rating.
+
+        Each dictionary entry in ratingsRaw looks like this:
+        'rating':<integer/number of files with rating>
+        """
+
+        try:
+            print(logMsg("JUDGENOTES","INFO"), "printRawRatings: Retrieving Raw Ratings from '" + self.notesFile + "'")
+            sortedRatings = sorted(self.ratingsRaw.keys(), key=float)
+            for rating in sortedRatings:
+                print("["+str(rating)+"/10] -->",self.ratingsRaw[rating])
+
+        except:
+            print(logMsg("JUDGENOTES","ERROR"), "printRawRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+
 
     def getRatingsToSongs(self):
         """
@@ -171,7 +214,7 @@ class JudgeNotes(object):
         'rating':[[TITLE,ARTIST,STEPARTIST],[TITLE,ARTIST,STEPARTIST],...]
 
         Basically we're reversing the way this is stored.
-        Done after ratingsToSongs has been created.
+        Done after judgedSongList has been created.
         """
         print(logMsg("JUDGENOTES","INFO"), "getRatingsToSongs: Generating Dictionary for Ratings --> Songs")
         try:
@@ -209,6 +252,28 @@ class JudgeNotes(object):
         except:
             print(logMsg("JUDGENOTES","ERROR"), "printRatingsToSongs: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
+    def writeRawRatings(self):
+        """
+        Write out number of songs that got each rating parsed.
+        """
+        print(logMsg("JUDGENOTES","INFO"), "writeRawRatings: Writing file containining songs for each rating")
+        try:
+            os.chdir(self.fileDir)
+            sortedRatings = sorted(self.ratingsRaw.keys(), key=float)
+            fileName = "ratingsRaw_" + self.judgeName + ".txt"
+            with open(fileName, 'w') as outFile:
+                for rating in sortedRatings:
+                    outFile.write("["+str(rating)+"/10]:"+str(self.ratingsRaw[rating])+"\n")
+                ratingSum = self.getRatingSum()
+                outFile.write("TOTAL:"+str(round(ratingSum,1))+"\n")
+                outFile.write("NUMFILES:"+str(self.numJudgedFiles)+"\n")
+                outFile.write("AVERAGE:"+str(round(self.average,2))+"\n")
+            outFile.close()
+            print(logMsg("JUDGENOTES","INFO"),"writeRawRatings: Successfully wrote file '" + fileName + "'")
+        except:
+            print(logMsg("JUDGENOTES","ERROR"), "writeRawRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+        
+
     def writeRatingsToSongs(self):
         """
         Write out songs for each rating out to file.
@@ -217,8 +282,8 @@ class JudgeNotes(object):
         try:
             os.chdir(self.fileDir)
             sortedRatings = sorted(self.ratingsToSongs.keys(), key=float)
-            fileName = "ratingsToSongs.txt"
-            with open("ratingsToSongs.txt", 'w') as outFile:
+            fileName = "ratingsToSongs_" + self.judgeName + ".txt"
+            with open(fileName, 'w') as outFile:
                 for rating in sortedRatings:
                     songsInRating = self.ratingsToSongs[rating]
                     outFile.write("["+str(rating)+"/10]")
@@ -258,16 +323,19 @@ class JudgeNotes(object):
 # MAIN
 if __name__ == "__main__":
 
-    judgeNotesFilePath = input("Input full path of Judge Notes File: ")
+    judgeNotesFilePath = (input("Input full path of Judge Notes File: ")).strip()
     judge = JudgeNotes(judgeNotesFilePath)
     judge.dumpInfo()
     judge.getJudgeName()
-##    judge.getJudgeRatings()
-##    judge.printJudgeRatings()
-##    judge.getJudgeAverage()
-##    judge.printJudgeAverage()
-##    judge.printNumOfJudgedFiles()
-##    judge.getRatingsToSongs()
-##    judge.printRatingsToSongs()
-##    judge.writeRatingsToSongs()
-##    judge.dumpInfo()
+    judge.getJudgeRatings()
+    # judge.printJudgeRatings()
+    judge.getJudgeAverage()
+    # judge.printJudgeAverage()
+    judge.printNumOfJudgedFiles()
+    judge.getRatingsToSongs()
+    # judge.printRatingsToSongs()
+    judge.writeRatingsToSongs()
+    judge.getRawRatings()
+    judge.printRawRatings()
+    judge.writeRawRatings()
+    judge.dumpInfo()

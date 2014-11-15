@@ -125,16 +125,19 @@ class Batch(object):
         
         # group(1) here refers to the captured field. Parse stepartist from song folder.
         print(logMsg("BATCH","INFO"),"getStepArtistFromFolder: Retrieving stepartist from folder '" + folder + "'")
+        stepArtist = ""
         try:
             parenthesesArtist = re.search(".*\[(.*)\]$",folder)
             bracketArtist = re.search(".*\((.*)\)$",folder)
+            curlybraceArtist = re.search(".*\{(.*)\}$",folder)
             if parenthesesArtist != None:
                 stepArtist = parenthesesArtist.group(1) # Stepartist with parentheses
             if bracketArtist != None:
                 stepArtist = bracketArtist.group(1) # Stepartist with brackets
+            if curlybraceArtist != None:
+                stepArtist = curlybraceArtist.group(1) # Stepartist with brackets
         except:
             print(logMsg("BATCH","ERROR"), "getStepArtistFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
-            stepArtist = ""
 
         return stepArtist
 
@@ -216,6 +219,8 @@ class Batch(object):
                     for songField in sortedSongFields:
                         fieldWithoutCommas = self.songFolderInfo[folder][songField] + ","
                         fieldWithoutCommas = re.sub(',', '', fieldWithoutCommas)
+                        if fieldWithoutCommas == "":
+                            print(logMsg("BATCH","WARNING"),"createCsvSongListing: '" + folder + "' has empty field for '" + songField + "'")
                         songInfoString += "," + fieldWithoutCommas
                     batchInfo.write(songInfoString+"\n")
             batchInfo.close()

@@ -17,6 +17,7 @@ class JudgeNotes(object):
     - average: Average Rating of the Judge.
     - judgedSongList: The titles of all the songs judged in notes file.
                       ([TITLE,ARTIST,STEPARTIST],rating)
+    - specialSongList: Same format as judgedSongList but with special ratings.
     - numJudgedFiles: How many files the judge rated.
     - ratingsToSongs: Dictionary storing total ratings a judge has given in the
                       batch file.
@@ -37,24 +38,30 @@ class JudgeNotes(object):
         self.judgeName = ""
         self.average = 0
         self.judgedSongList = []
+        self.specialSongList = []
         self.numJudgedFiles = 0
+        self.numSpecialFiles = 0
+        self.numTotalFiles = 0
         self.ratingsToSongs = {}
         self.ratingsRaw = {}
+        self.specialRatingsToSongs = {}
+        self.specialRatingsRaw = {}
 
     def dumpInfo(self):
         print(logMsg("JUDGENOTES","INFO"),"dumpInfo: Dumping Judge Notes Info")
         print("- JUDGE NOTES FILE PATH:", self.path,
               "\n- JUDGE NOTES FILE:", self.notesFile,
               "\n- JUDGE NOTES FILE DIR:", self.fileDir,
+              "\n- JUDGE NAME:", self.judgeName,
               "\n- JUDGE AVERAGE:", self.average,
-              "\n- JUDGE RATINGS:", self.numJudgedFiles,
-              "\n- JUDGE NAME:", self.judgeName)
+              "\n- JUDGED RATINGS:", self.numJudgedFiles,
+              "\n- SPECIAL RATINGS:", self.numSpecialFiles,
+              "\n- TOTAL RATINGS:", self.numTotalFiles)
 
     def getJudgeRatings(self):
         """
         Looks through the file user specified for what judge gave.
-        [TITLE,STEPARTIST] entries are added to judged song list,
-        this is used for checks if multiple stepartists submitted
+        This is also used for checks if multiple stepartists submitted
         the same song.
         """
         print(logMsg("JUDGENOTES","INFO"),"getJudgeRatings: Parsing Judge Notes File")
@@ -63,13 +70,17 @@ class JudgeNotes(object):
             with open(self.notesFile) as judgeFile:
                 for line in judgeFile:
                     if line.startswith('['):
-                        ratingTuple = self.getRatingWithInfo(line)
-                        # ([TITLE,ARTIST,STEPARTIST],rating) tuple entry added to judged song list.
-                        self.judgedSongList.append(ratingTuple)
+                        self.getRatingWithInfo(line)                       
             judgeFile.close()
-            self.numJudgedFiles = len(self.judgedSongList) # Save how many files the judge rated.
+            self.numJudgedFiles = len(self.judgedSongList)
         except:
             print(logMsg("JUDGENOTES","ERROR"), "getJudgeRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+
+    def getNumSpecialFiles(self):
+        self.numSpecialFiles = len(self.specialSongList)
+
+    def getNumTotalFiles(self):
+        self.numTotalFiles = self.numJudgedFiles + self.numSpecialFiles
 
     def getJudgeName(self):
         """
@@ -99,11 +110,34 @@ class JudgeNotes(object):
         Returns a tuple in the form of ([TITLE,ARTIST,STEPARTIST],rating)
         Note if there's no stepartist, a null string will be in stepartist field
         Example Return: (["Dysnomia","Reizoko Cj","Nick Skyline"],5.5)
+
+        EXCEPTIONS
+        Other 'ratings' to consider are:
+        - 'PASS'
+        - '++' (this is 10/10, guaranteed)
+        - '--' (this is just 0/10, guaranteed)
+        - '!' (this is also 0/10, guaranteed)
+        - '*' (Conditional Queue Flag)
+        - '#' (The Judge made the file)
+        - '<' (there's already a better file in queue, this doesn't go as v2)
+        - '$' (file is better than queued file)
         """
 
         ratingStepartist = re.search("^\[([\d]+\.?[\d]?)/10\](.*)\{(.*)\}[\s]*\((.*)\)$",ratingLine)
         ratingNoStepartist = re.search("^\[([\d]+\.?[\d]?)/10\](.*)\{(.*)\}$",ratingLine)
+
+        # I wasn't able to do a generalized capture here because weird things happened
+        # For instance, !, +, -, and * were captured, but with #, <, and $ things got weird
+        passRating = re.search("^\[(PASS).*\]",ratingLine)
+        plus = re.search("^\[(\+\+).*\]",ratingLine)
+        negative = re.search("^\[(--).*\]",ratingLine)
+        bang = re.search("^\[(!).*\]",ratingLine)
+        star = re.search("^\[(\*).*\]",ratingLine)
+        pound = re.search("^\[(\#).*\]",ratingLine)
+        arrow = re.search("^\[(\<)\]",ratingLine)
+        dollar = re.search("^\[(\$)\]",ratingLine)
         songInfo = []
+        rating = 0
         try:
 
             # Retrieve song information from line.
@@ -114,6 +148,9 @@ class JudgeNotes(object):
                 songInfo = [ ratingStepartist.group(2).strip(), # Song Title
                              ratingStepartist.group(3).strip(), # Song Artist
                              ratingStepartist.group(4).strip() ] # Stepartist
+                tupleToAdd = (songInfo,rating)
+                self.judgedSongList.append(tupleToAdd)
+                return
             elif ratingNoStepartist != None:
                 print(logMsg("JUDGENOTES","INFO"),"getRatingWithInfo: Found rating without stepartist")
                 # ratingNoStepartist.group(0) # Full Match
@@ -121,11 +158,91 @@ class JudgeNotes(object):
                 songInfo = [ ratingNoStepartist.group(2).strip(), # Song Title
                              ratingNoStepartist.group(3).strip(), # Song Artist
                              "" ]  # Stepartist placeholder, used for compatibility
-
-            return (songInfo,rating)
+                tupleToAdd = (songInfo,rating)
+                self.judgedSongList.append(tupleToAdd)
+                return
+            elif passRating != None:
+                specialTuple = self.handleSpecialRating(passRating.group(1).strip(),ratingLine)
+                self.specialSongList.append(specialTuple)
+                return
+            elif plus != None:
+                specialTuple = self.handleSpecialRating(plus.group(1).strip(),ratingLine)
+                self.judgedSongList.append(specialTuple) # A '++' is a 10/10
+                return
+            elif negative != None:
+                specialTuple = self.handleSpecialRating(negative.group(1).strip(),ratingLine)
+                self.judgedSongList.append(specialTuple) # A '--' is a 0/10
+                return
+            elif bang != None:
+                specialTuple = self.handleSpecialRating(bang.group(1).strip(),ratingLine)
+                self.judgedSongList.append(specialTuple) # A '!' is a 0/10
+                return
+            elif star != None:
+                specialTuple = self.handleSpecialRating(star.group(1).strip(),ratingLine)
+                self.specialSongList.append(specialTuple)
+                return
+            elif pound != None:
+                specialTuple = self.handleSpecialRating(pound.group(1).strip(),ratingLine)
+                self.specialSongList.append(specialTuple)
+                return
+            elif arrow != None:
+                specialTuple = self.handleSpecialRating(arrow.group(1).strip(),ratingLine)
+                self.specialSongList.append(specialTuple)
+                return
+            elif dollar != None:
+                specialTuple = self.handleSpecialRating(dollar.group(1).strip(),ratingLine)
+                self.specialSongList.append(specialTuple)
+                return            
         
         except:
             print(logMsg("JUDGENOTES","ERROR"), "getRatingWithInfo: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))    
+
+    def handleSpecialRating(self,symbol,lineToParse):
+        """
+        Other 'ratings' to consider are:
+        - 'PASS'
+        - '++' (this is 10/10, guaranteed)
+        - '--' (this is just 0/10, guaranteed)
+        - '!' (this is also 0/10, guaranteed)
+        - '*' (Conditional Queue Flag)
+        - '#' (The Judge made the file)
+        - '<' (there's already a better file in queue, this doesn't go as v2)
+        - '$' (file is better than queued file)
+
+        symbol is the captured special rating.
+        lineToParse is the full line in which the symbol was spotted.
+        """
+        try:
+            songInfo = []
+            #ratingStepartist = re.search("^\[.*\](.*)\{(.*)\}[\s]*\((.*)\)$",lineToParse)
+            #ratingNoStepartist = re.search("^\[.*\](.*)\{(.*)\}$",lineToParse)
+            ratingStepartist = re.search("^\[\\"+symbol+"[10/]*\](.*)\{(.*)\}[\s]*\((.*)\)$",lineToParse)
+            ratingNoStepartist = re.search("^\[\\"+symbol+"[10/]*\](.*)\{(.*)\}$",lineToParse)
+            if ratingStepartist != None:
+                print(logMsg("JUDGENOTES","INFO"),"handleSpecialRating: Found rating with stepartist on special rating '" + symbol + "'")
+                # ratingStepartist.group(0) # Full match
+                songInfo = [ ratingStepartist.group(1).strip(), # Song Title
+                             ratingStepartist.group(2).strip(), # Song Artist
+                             ratingStepartist.group(3).strip() ] # Stepartist
+            elif ratingNoStepartist != None:
+                print(logMsg("JUDGENOTES","INFO"),"handleSpecialRating: Found rating without stepartist on special rating '" + symbol + "'")
+                # ratingNoStepartist.group(0) # Full Match
+                songInfo = [ ratingNoStepartist.group(1).strip(), # Song Title
+                             ratingNoStepartist.group(2).strip(), # Song Artist
+                             "" ]  # Stepartist placeholder, used for compatibility
+
+            # ++ is a guaranteed 10, and -- and ! are guaranteed 0.
+            if symbol == "++":
+                rating = '10'
+            elif symbol == "--" or symbol == "!":
+                rating = '0'
+            else:
+                rating = symbol
+
+            return (songInfo,rating)
+                             
+        except:
+            print(logMsg("JUDGENOTES","ERROR"), "handleSpecialRating: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))    
 
     def printJudgeRatings(self):
         """
@@ -135,14 +252,26 @@ class JudgeNotes(object):
         """
 
         try:
-            print(logMsg("JUDGENOTES","INFO"), "printJudgeRatings: Printing out judge ratings from '" + self.notesFile + "'")
+            print(logMsg("JUDGENOTES","INFO"), "printJudgeRatings: Printing out judge ratings from '" + self.notesFile + "'\n")
+
+            # Print Normal List First.
             for ratingTuple in self.judgedSongList:
                 if ratingTuple[0][2] != "":
                     print("SONG:",ratingTuple[0][0], "{"+ratingTuple[0][1]+"}", "("+ratingTuple[0][2]+")",
-                          "\nRATING:","["+ratingTuple[1]+"/10]")
+                          "\nRATING:","["+str(ratingTuple[1])+"/10]\n")
                 else:
                     print("SONG:",ratingTuple[0][0], "{"+ratingTuple[0][1]+"}",
-                          "\nRATING:","["+ratingTuple[1]+"/10]")
+                          "\nRATING:","["+str(ratingTuple[1])+"/10]\n")
+
+            # Print Special List Second.
+            for ratingTuple in self.specialSongList:
+                if ratingTuple[0][2] != "":
+                    print("SONG:",ratingTuple[0][0], "{"+ratingTuple[0][1]+"}", "("+ratingTuple[0][2]+")",
+                          "\nRATING:","["+str(ratingTuple[1])+"]\n")
+                else:
+                    print("SONG:",ratingTuple[0][0], "{"+ratingTuple[0][1]+"}",
+                          "\nRATING:","["+str(ratingTuple[1])+"]\n")
+            
         except:
             print(logMsg("JUDGENOTES","ERROR"), "printJudgeRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
@@ -187,6 +316,17 @@ class JudgeNotes(object):
         except:
             print(logMsg("JUDGENOTES","ERROR"), "getRawRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
+    def getRawSpecialRatings(self):
+        try:
+            print(logMsg("JUDGENOTES","INFO"), "getRawSpecialRatings: Retrieving Raw Ratings from '" + self.notesFile + "'")
+            for rating in self.specialRatingsToSongs.keys():
+                numOfSongsWithRating = len(self.specialRatingsToSongs[rating])
+                self.specialRatingsRaw[rating] = numOfSongsWithRating
+
+        except:
+            print(logMsg("JUDGENOTES","ERROR"), "getRawSpecialRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+        
+
     def printRawRatings(self):
         """
         Print out just a simple listing of how many songs got a certain rating.
@@ -196,10 +336,19 @@ class JudgeNotes(object):
         """
 
         try:
-            print(logMsg("JUDGENOTES","INFO"), "printRawRatings: Retrieving Raw Ratings from '" + self.notesFile + "'")
+            print(logMsg("JUDGENOTES","INFO"), "printRawRatings: Retrieving Raw Ratings from '" + self.notesFile + "'\n")
             sortedRatings = sorted(self.ratingsRaw.keys(), key=float)
             for rating in sortedRatings:
-                print("["+str(rating)+"/10] -->",self.ratingsRaw[rating])
+                print("["+str(rating)+"/10]:"+str(self.ratingsRaw[rating]))
+            ratingSum = self.getRatingSum()
+            sortedRatings = sorted(self.specialRatingsRaw.keys(), key=str.lower)
+            for rating in sortedRatings:
+                print("["+str(rating)+"]:"+str(self.specialRatingsRaw[rating]))
+            print("TOTAL:"+str(round(ratingSum,1)))
+            print("JUDGEDFILES:"+str(self.numJudgedFiles))
+            print("SPECIALFILES:"+str(self.numSpecialFiles))
+            print("TOTALFILES:"+str(self.numTotalFiles))
+            print("AVERAGE:"+str(round(self.average,2))+"\n")
 
         except:
             print(logMsg("JUDGENOTES","ERROR"), "printRawRatings: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
@@ -229,6 +378,20 @@ class JudgeNotes(object):
         except:
             print(logMsg("JUDGENOTES","ERROR"), "getRatingsToSongs: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
+    def getSpecialRatingsToSongs(self):
+        print(logMsg("JUDGENOTES","INFO"), "getSpecialRatingsToSongs: Generating Dictionary for Special Ratings --> Songs")
+        try:
+            for ratingTuple in self.specialSongList:
+                keyForDict = ratingTuple[1]
+                songInfo = ratingTuple[0]
+                if keyForDict not in self.specialRatingsToSongs:
+                    self.specialRatingsToSongs[keyForDict] = [songInfo]
+                else:
+                    self.specialRatingsToSongs[keyForDict].append(songInfo)
+
+        except:
+            print(logMsg("JUDGENOTES","ERROR"), "getSpecialRatingsToSongs: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+        
     def printRatingsToSongs(self):
         """
         Print out the songs that fell under the parsed ratings.
@@ -238,6 +401,8 @@ class JudgeNotes(object):
         """
         print(logMsg("JUDGENOTES","INFO"), "printRatingsToSongs: Printing songs for each rating parsed")
         try:
+
+            # Print out normal ratings first.
             sortedRatings = sorted(self.ratingsToSongs.keys(), key=float)
             for rating in sortedRatings:
                 print("") # For neater printing. Newline still occurs here
@@ -248,6 +413,19 @@ class JudgeNotes(object):
                         print("-->",song[0],"{"+song[1]+"}","("+song[2]+")")
                     else:
                         print("-->",song[0],"{"+song[1]+"}")
+
+            # Print out special ratings after.
+            sortedRatings = sorted(self.specialRatingsToSongs.keys(), key=str.lower)
+            for rating in sortedRatings:
+                print("") # For neater printing. Newline still occurs here
+                songsInRating = self.specialRatingsToSongs[rating]
+                print("["+str(rating)+"]")
+                for song in songsInRating:
+                    if song[2] != "":
+                        print("-->",song[0],"{"+song[1]+"}","("+song[2]+")")
+                    else:
+                        print("-->",song[0],"{"+song[1]+"}")
+                    
             print("") # For neater printing. Newline still occurs here
         except:
             print(logMsg("JUDGENOTES","ERROR"), "printRatingsToSongs: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
@@ -262,11 +440,22 @@ class JudgeNotes(object):
             sortedRatings = sorted(self.ratingsRaw.keys(), key=float)
             fileName = "ratingsRaw_" + self.judgeName + ".txt"
             with open(fileName, 'w') as outFile:
+
+                # Write out normal raw ratings first.
                 for rating in sortedRatings:
                     outFile.write("["+str(rating)+"/10]:"+str(self.ratingsRaw[rating])+"\n")
                 ratingSum = self.getRatingSum()
+
+                # Write out special raw ratings second.
+                sortedRatings = sorted(self.specialRatingsRaw.keys(), key=str.lower)
+                for rating in sortedRatings:
+                    outFile.write("["+str(rating)+"]:"+str(self.specialRatingsRaw[rating])+"\n")
+
+                # Write out average as well.
                 outFile.write("TOTAL:"+str(round(ratingSum,1))+"\n")
-                outFile.write("NUMFILES:"+str(self.numJudgedFiles)+"\n")
+                outFile.write("JUDGEDFILES:"+str(self.numJudgedFiles)+"\n")
+                outFile.write("SPECIALFILES:"+str(self.numSpecialFiles)+"\n")
+                outFile.write("TOTALFILES:"+str(self.numTotalFiles)+"\n")
                 outFile.write("AVERAGE:"+str(round(self.average,2))+"\n")
             outFile.close()
             print(logMsg("JUDGENOTES","INFO"),"writeRawRatings: Successfully wrote file '" + fileName + "'")
@@ -284,6 +473,8 @@ class JudgeNotes(object):
             sortedRatings = sorted(self.ratingsToSongs.keys(), key=float)
             fileName = "ratingsToSongs_" + self.judgeName + ".txt"
             with open(fileName, 'w') as outFile:
+
+                # Write out the normal ratings first.
                 for rating in sortedRatings:
                     songsInRating = self.ratingsToSongs[rating]
                     outFile.write("["+str(rating)+"/10]")
@@ -293,6 +484,19 @@ class JudgeNotes(object):
                         else:
                             outFile.write("\n--> " + str(song[0]) + " {" + str(song[1]) + "}")
                     outFile.write("\n\n")
+
+                # Write out the special ratings after.
+                sortedRatings = sorted(self.specialRatingsToSongs.keys(), key=str.lower)
+                for rating in sortedRatings:
+                    songsInRating = self.specialRatingsToSongs[rating]
+                    outFile.write("["+str(rating)+"]")
+                    for song in songsInRating:
+                        if song[2] != "":
+                            outFile.write("\n--> " + str(song[0]) + " {" + str(song[1]) + "} ("+str(song[2]) + ")")
+                        else:
+                            outFile.write("\n--> " + str(song[0]) + " {" + str(song[1]) + "}")
+                    outFile.write("\n\n")
+                    
             outFile.close()
             print(logMsg("JUDGENOTES","INFO"),"writeRatingsToSongs: Successfully wrote file '" + fileName + "'")
         except:
@@ -310,16 +514,10 @@ class JudgeNotes(object):
         """
         print(logMsg("JUDGENOTES","INFO"), "printNumOfJudgedFiles:", self.numJudgedFiles, "files judged from '" + self.notesFile + "'")
 
-# use suites\judgenotes\DossarLX ODI_NotesMayBatch.txt
+# Test files:
 # C:\pythoncode\batchApis\suites\judgenotes\DossarLX ODI_NotesMayBatch.txt
-# 9 files
-# 4/10 - 1
-# 5/10 - 2
-# 6/10 - 2
-# 6.5/10 - 1
-# 7.5/10 - 1
-# 8/10 - 1
-# 10/10 - 1
+# C:\pythoncode\batchApis\suites\judgenotes\Niala_Notes_OtherSymbols.txt
+
 # MAIN
 if __name__ == "__main__":
 
@@ -327,15 +525,25 @@ if __name__ == "__main__":
     judge = JudgeNotes(judgeNotesFilePath)
     judge.dumpInfo()
     judge.getJudgeName()
+
+    
     judge.getJudgeRatings()
-    # judge.printJudgeRatings()
+    judge.getNumSpecialFiles()
+    judge.getNumTotalFiles()
+    judge.printJudgeRatings()
     judge.getJudgeAverage()
-    # judge.printJudgeAverage()
+    judge.printJudgeAverage()
+
+    
     judge.printNumOfJudgedFiles()
     judge.getRatingsToSongs()
-    # judge.printRatingsToSongs()
+    judge.getSpecialRatingsToSongs()
+    judge.printRatingsToSongs()
     judge.writeRatingsToSongs()
+
+    
     judge.getRawRatings()
+    judge.getRawSpecialRatings()
     judge.printRawRatings()
     judge.writeRawRatings()
     judge.dumpInfo()

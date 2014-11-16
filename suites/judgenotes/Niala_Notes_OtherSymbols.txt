@@ -1,0 +1,74 @@
+Mashup of multiple judge note styles
+
+
+[1/10] Goddess Gagged {Protest The Hero}
+- normal number
+
+[PASS] Gruntilda's Final Battle {Banjo Kazooie}
+- passed file
+
+[3/10] PARANOiA (HADES) -MiDNiGHT MiX- {DontRemember}
+- Pad charts aren't exactly what we're looking for on FFR. We're looking for keyboard charts that follow the music via pitch relevancy, layering techniques, etc.
+
+[++/10] Happy Meal {Nero's Day At Disneyland} (iironiic)
+- 10/10
+
+[8.5/10] DESTINY {orgt} (bmah)
+// Layering works, though some spots feel under-emphasized. Patterns are very good.
+9.43-11.08s: Jump PR is backwards.
+51.14s: Even though there's no crash here, it's actually louder than the hand at 49.32, but then 52.46s is louder than 51.14s, so this works fine.
+54.10s: Different percussion sound and shouldn't be a part of the 8th anchor.
+71.91-75.86, 82.46-83.77s: There are some crashes in here and beats that are more emphasized than others, so these shouldn't all be jumps.
+96.96-101.25s: Might could use some more hands in here, because this is pretty loud.
+
+[--] Happy Meal {Nero's Day At Disneyland} (TomWinter)
+- 0/10
+
+[5/10] Lawn Wake III {The Flashbulb}
+10.033/14.833 - could hit up a 16th here
+15.733 - note for melody
+19.558 - note
+26.758 - you missed a snare after the burst
+29.158/31.108 - jump
+43.108 - again, snares after these couple bursts (117.508)
+108.433/110.833 - note
+141.508 - did you just copypaste this?
+messy+innacurate
+
+[!] Information Transmission {Xi}
+- 0/10
+
+[*] Laventale {sakuzyo}
+- Conditional Queue
+
+[7.5/10] Arianrhod {LeaF}
+3.787 - random weird burst unnecessary
+33.035 - take a look at what you're stepping here, it feels really off
+35.285 - places like these leave me wondering exactly what you're layering
+48.972 - feels better with the 8th notes as not jumps
+83.097 - jumpjacks may be a bit excessive here
+a bit quirky, interesting layering choices, sometimes i disagree w/ what you're leaving out, but it works well I think. a little of clutter in that polyrhythm section to watch out for, but good job
+
+[*/10] CIA Rave v1000 {DJ Ascent}
+- Conditional Queue
+
+[#] [Snowman And Sunshine Girl] -Terror From Beyond- (SuperRemix Gimmix) {expressive} {Digital Explosion}
+-  Judge made the file
+
+[--/10] Floating Free {Vibrasphere}
+- incorrect BPM, in addition to an improper offset
+- chart does not correspond to the music at all and resorts to placing notes completely at random
+
+[<] {~-Zero-~} =PLANET KARMA= ^_^ [superultrabrutal] (yes) endOfSongTitle {obscureArtist} (badStepper)
+- There is already a better file in queue
+
+[0/10] KOMMICORE {kommisar}
+- Sorry I had to
+
+[10/10] Holy Winter {Cranky}
+- 209.769: ugh, right at the end of the file
+- absolutely fantastic, oh my god!
+- I have a few very subjective qualms with pattern choices, like jumps for repeated notes in a few instances, but it is incredibly fluent and just works.
+
+[$] {~-Zero-~} =PLANET KARMA= ^_^ [superultrabrutal] (yes) endOfSongTitle {obscureArtist} (mediocreStepper)
+- File is better than queued file

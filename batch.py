@@ -80,36 +80,47 @@ class Batch(object):
         os.chdir(chartFolder) # Change to song folder's context in the batch
         songFieldInfo = {}
 
-        # group(1) here refers to the captured field.
-        if chartType == "sm":
-            with open(chartFile) as smFile:
-                for line in smFile:
-                    if line.startswith('#'):
-                        for field in self.smFileFields:
-                            if field == "STEPARTIST":
-                                continue
-                            else:
-                                fieldSearch = re.search("^#"+field+":(.*);$",line)
-                                if fieldSearch != None:
-                                    songFieldInfo[field] = fieldSearch.group(1)
-                    else:
-                        break # No more hashtags means we're done with the song info at the top
+        try:
 
-        # group(1) here refers to the captured field.
-        if chartType == "dwi":
-            with open(chartFile) as dwiFile:
-                for line in dwiFile:
-                    if line.startswith('#'):
-                        for field in self.dwiFileFields:
-                            if field == "STEPARTIST":
-                                continue
-                            else:
-                                fieldSearch = re.search("^#"+field+":(.*);$",line)
-                                if fieldSearch != None:
-                                    songFieldInfo[field] = fieldSearch.group(1)
-                    else:
-                        break # No more hashtags means we're done with the song info at the top
+            # group(1) here refers to the captured field.
+            if chartType == "sm":
+                with open(chartFile) as smFile:
+                    for line in smFile:
+                        if line.startswith('#'):
+                            for field in self.smFileFields:
+                                if field == "STEPARTIST":
+                                    continue
+                                else:
+                                    fieldSearch = re.search("^#"+field+":(.*);$",line)
+                                    if fieldSearch != None:
+                                        songFieldInfo[field] = fieldSearch.group(1)
+                        else:
+                            break # No more hashtags means we're done with the song info at the top
 
+            # group(1) here refers to the captured field.
+            if chartType == "dwi":
+                with open(chartFile) as dwiFile:
+                    for line in dwiFile:
+                        if line.startswith('#'):
+                            for field in self.dwiFileFields:
+                                if field == "STEPARTIST":
+                                    continue
+                                else:
+                                    fieldSearch = re.search("^#"+field+":(.*);$",line)
+                                    if fieldSearch != None:
+                                        songFieldInfo[field] = fieldSearch.group(1)
+                        else:
+                            break # No more hashtags means we're done with the song info at the top
+        except:
+            print(logMsg("BATCH","ERROR"), "parseChartFile: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            if 'TITLE' in self.smFileFields:
+                # songFieldInfo['TITLE'] = os.path.basename(os.path.normpath(chartFolder))
+                folderName = os.path.basename(os.path.normpath(chartFolder))
+                songTitle = self.getSongTitleFromFolder(folderName)
+                songFieldInfo['TITLE'] = songTitle
+            if 'ARTIST' in self.smFileFields:
+                songFieldInfo['ARTIST'] = ""
+            
         # Get stepartist information after parsing any song information.
         if 'STEPARTIST' in self.smFileFields:
             folderName = os.path.basename(os.path.normpath(chartFolder))
@@ -118,6 +129,29 @@ class Batch(object):
 
         return songFieldInfo # Dictionary of file fields
 
+    def getSongTitleFromFolder(self,folder):
+        """
+        folder is the name of the folder by itself.
+        """
+        
+        # group(1) here refers to the captured field. Parse stepartist from song folder.
+        print(logMsg("BATCH","INFO"),"getSongTitleFromFolder: Retrieving song title from folder '" + folder + "'")
+        stepArtist = ""
+        try:
+            parenthesesArtist = re.search("(.*)\[(.*)\]$",folder)
+            bracketArtist = re.search("(.*)\((.*)\)$",folder)
+            curlybraceArtist = re.search("(.*)\{(.*)\}$",folder)
+            if parenthesesArtist != None:
+                song = parenthesesArtist.group(1).strip() # Song Title with parentheses stepartist
+            if bracketArtist != None:
+                song = bracketArtist.group(1).strip() # Song Title with brackets stepartist
+            if curlybraceArtist != None:
+                song = curlybraceArtist.group(1).strip() # Song Title with brackets stepartist
+        except:
+            print(logMsg("BATCH","ERROR"), "getSongTitleFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+
+        return song
+    
     def getStepArtistFromFolder(self,folder):
         """
         folder is the name of the folder by itself.
@@ -168,11 +202,12 @@ class Batch(object):
                     self.songFolderInfo[songFolder] = songInfo
 
             except:
+                print(logMsg("BATCH","ERROR"), "getSongInfo: Something went wrong trying to parse through '" + songFolder + "'")
                 print(logMsg("BATCH","ERROR"), "getSongInfo: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
 
     def parseSongs(self):
         """
-        songFolder is the name of the folder by itself. It will be turned into the full file path
+        folder is the name of the folder by itself. It will be turned into the full file path
         However since not every file in the batch could be a folder, keep file cases in mind
         """
         if self.batchFiles != []:

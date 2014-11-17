@@ -265,6 +265,7 @@ class Batch(object):
         
     
 # MAIN
+# Use C:\pythoncode\batchApis\suites\batch for testing.
 if __name__ == "__main__":
 
     # Create Batch Object.

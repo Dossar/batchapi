@@ -88,6 +88,8 @@ class Batch(object):
                     for line in smFile:
                         if line.startswith('#'):
                             for field in self.smFileFields:
+                                if field == "TITLE":
+                                    continue # We're getting title and stepartist from folder
                                 if field == "STEPARTIST":
                                     continue
                                 else:
@@ -103,6 +105,8 @@ class Batch(object):
                     for line in dwiFile:
                         if line.startswith('#'):
                             for field in self.dwiFileFields:
+                                if field == "TITLE":
+                                    continue # We're getting title and stepartist from folder
                                 if field == "STEPARTIST":
                                     continue
                                 else:
@@ -121,11 +125,17 @@ class Batch(object):
             if 'ARTIST' in self.smFileFields:
                 songFieldInfo['ARTIST'] = ""
             
-        # Get stepartist information after parsing any song information.
+        # Get stepartist information after parsing any other song information.
         if 'STEPARTIST' in self.smFileFields:
             folderName = os.path.basename(os.path.normpath(chartFolder))
             stepper = self.getStepArtistFromFolder(folderName)
             songFieldInfo['STEPARTIST'] = stepper
+
+        # Get song title information after parsing any other song information.
+        if 'TITLE' in self.smFileFields:
+            folderName = os.path.basename(os.path.normpath(chartFolder))
+            songTitle = self.getSongTitleFromFolder(folderName)
+            songFieldInfo['TITLE'] = songTitle
 
         return songFieldInfo # Dictionary of file fields
 

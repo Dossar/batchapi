@@ -36,7 +36,7 @@ class NotesTemplate(object):
         self.path = csvPath
         self.fileDir = os.path.abspath(os.path.join(os.path.dirname( self.path ), '.'))
         self.csvFile = os.path.basename(os.path.normpath(self.path))
-        self.batchName = (os.path.basename(os.path.normpath(self.path))).strip(".csv")
+        self.batchName = (os.path.basename(os.path.normpath(self.path))).split(".csv")[0]
         self.outputFile = "template_" + self.batchName + ".txt"
         self.searchFields = searchList
         self.fieldToIndex = {}

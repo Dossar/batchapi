@@ -279,7 +279,8 @@ class Batch(object):
 if __name__ == "__main__":
 
     # Create Batch Object.
-    batchPath = input("Input directory to Batch Folder: ")
+    print("batch.py looks through a batch set song directory and retrieves song information from it, then generates a .csv file of this information.")
+    batchPath = (input("Input full path to directory of Batch Set Folder: ")).strip()
     batchContainer = Batch(batchPath)
     batchContainer.setSmFileFields(['TITLE','ARTIST','STEPARTIST'])
     batchContainer.setDwiFileFields(['TITLE','ARTIST','STEPARTIST'])

@@ -521,6 +521,8 @@ class JudgeNotes(object):
 # MAIN
 if __name__ == "__main__":
 
+    print("judgenotes.py is used to get some analytics out of a judge's notes concerning normal ratings and special ratings.")
+    print("This should not be run until after judges have passed in their notes.")
     judgeNotesFilePath = (input("Input full path of Judge Notes File: ")).strip()
     judge = JudgeNotes(judgeNotesFilePath)
     judge.dumpInfo()

@@ -32,7 +32,7 @@ class JudgesForExcel(object):
         self.path = notesDir
         self.setName = os.path.basename(os.path.normpath(self.path)).strip()
         self.setNumber = "0"
-        self.setCSV = self.setName + ".csv"
+        self.setCSV = "judgments_" + self.setName + ".csv"
         self.notesFiles = []
         self.judgeNames = []
         self.judgeToFileName = {}
@@ -166,8 +166,8 @@ class JudgesForExcel(object):
         bang = re.search("^\[(!).*\]",ratingLine)
         star = re.search("^\[(\*).*\]",ratingLine)
         pound = re.search("^\[(\#).*\]",ratingLine)
-        arrow = re.search("^\[(\<)\]",ratingLine)
-        dollar = re.search("^\[(\$)\]",ratingLine)
+        arrow = re.search("^\[(\<).*\]",ratingLine)
+        dollar = re.search("^\[(\$).*\]",ratingLine)
         songInfo = []
         rating = 0
 
@@ -255,11 +255,9 @@ class JudgesForExcel(object):
                 # Set up the judges for printing out. Remember this has tuples
                 songcounter = 0
                 for song in self.setSongs:
-                    # print(song)
                     lineToWrite = song[0] + "," + song[1] + "," + self.setNumber
                     for judgeName in self.judgeNames:
                         lineToWrite += "," + ( self.judgeToRating[judgeName] )[songcounter]
-                    # print(lineToWrite)
                     setRatings.write(lineToWrite+"\n")
                     songcounter += 1
             setRatings.close()
@@ -272,6 +270,8 @@ class JudgesForExcel(object):
 # Use C:\pythoncode\batchApis\tests\sets\set1
 if __name__ == "__main__":
 
+    print("judgetoexcel.py is used to make a .csv file that contains judge ratings (judgments_<setname>.csv)")
+    print("It is assumed you have already ran artistfornotes.py to add in the stepartists (the files had _steppers appended to the file name). If you are specifying a set directory with judge notes that don't have the stepartists in them, you will get unexpected behavior.")
     notesDirPath = (input("Input full path of Set directory with Judge Notes: ")).strip()
     judgeSet = JudgesForExcel(notesDirPath)
     judgeSet.dumpInfo()

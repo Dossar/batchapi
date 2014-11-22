@@ -180,7 +180,9 @@ class NotesTemplate(object):
 if __name__ == "__main__":
     
     # Create Template Object.
-    inputCSV = input("Input Full Path to CSV File: ")
+    print("notestemplate.py is used to generate a template judge notes file from the .csv file generated in batch.py")
+    print("It is assumed here you already have run batch.py to make this .csv file.")
+    inputCSV = (input("Input Full Path to .csv File generated from batch.py: ")).strip()
     searchList = ['ARTIST','TITLE','STEPARTIST'] # Same song title and same song artist for comparison
     templateNotes = NotesTemplate(inputCSV,searchList)
     templateNotes.dumpInfo()

@@ -45,17 +45,19 @@ class NotesTemplate():
         self.stepperIndex = 0
         self.artistIndex = 0
 
-    def dumpInfo(self):
-        print(logMsg("NOTESTEMPLATE","INFO"),"dumpInfo: Dumping Batch Info")
-        print("- CSV FILE PATH:", self.path,
-              "\n- CSV FILE DIR:", self.fileDir,
-              "\n- CSV FILE NAME:", self.csvFile,
-              "\n- BATCH NAME:", self.batchName,
-              "\n- OUTPUT FILE:", self.outputFile,
-              "\n- COMPARISON FIELDS:", self.searchFields,
-              "\n- TITLE INDEX:", self.titleIndex,
-              "\n- STEPARTIST INDEX:", self.stepperIndex,
-              "\n- SONG ARTIST INDEX:", self.artistIndex)
+    def __str__(self):
+        print(logMsg("NOTESTEMPLATE", "INFO"), "dumpInfo: Dumping Batch Info")
+        return """- CSV FILE PATH: {}
+- CSV FILE DIR: {}
+- CSV FILE NAME: {}
+- BATCH NAME: {}
+- OUTPUT FILE: {}
+- COMPARISON FIELDS: {}
+- TITLE INDEX: {}
+- STEPARTIST INDEX: {}
+- SONG ARTIST INDEX: {}""" \
+        .format(self.path, self.fileDir, self.csvFile, self.batchName, self.outputFile, self.searchFields,
+                self.titleIndex, self.stepperIndex, self.artistIndex)
 
     def getFieldIndices(self):
         """
@@ -185,14 +187,13 @@ if __name__ == "__main__":
     print("notestemplate.py is used to generate a template judge notes file from the .csv file generated in batch.py")
     print("It is assumed here you already have run batch.py to make this .csv file.")
     inputCSV = (input("Input Full Path to .csv File generated from batch.py: ")).strip()
-    templateNotes.dumpInfo()
     searchList = ['ARTIST', 'TITLE', 'STEPARTIST']  # Same song title and same song artist for comparison
     templateNotes = NotesTemplate(inputCSV, searchList)
+    print(templateNotes)
 
     templateNotes.getFieldIndices()
     templateNotes.getRelevantFields()
-    templateNotes.dumpInfo()
-
+    print(templateNotes)
 
     templateNotes.printTemplate()
     templateNotes.writeTemplateFile()

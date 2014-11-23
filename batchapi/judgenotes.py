@@ -48,16 +48,18 @@ class JudgeNotes():
         self.specialRatingsToSongs = {}
         self.specialRatingsRaw = {}
 
-    def dumpInfo(self):
-        print(logMsg("JUDGENOTES","INFO"),"dumpInfo: Dumping Judge Notes Info")
-        print("- JUDGE NOTES FILE PATH:", self.path,
-              "\n- JUDGE NOTES FILE:", self.notesFile,
-              "\n- JUDGE NOTES FILE DIR:", self.fileDir,
-              "\n- JUDGE NAME:", self.judgeName,
-              "\n- JUDGE AVERAGE:", self.average,
-              "\n- JUDGED RATINGS:", self.numJudgedFiles,
-              "\n- SPECIAL RATINGS:", self.numSpecialFiles,
-              "\n- TOTAL RATINGS:", self.numTotalFiles)
+    def __str__(self):
+        print(logMsg("JUDGENOTES", "INFO"), "dumpInfo: Dumping Judge Notes Info")
+        return """JUDGE NOTES FILE PATH: {}
+- JUDGE NOTES FILE: {}
+- JUDGE NOTES FILE DIR: {}
+- JUDGE NAME: {}
+- JUDGE AVERAGE: {}
+- JUDGED RATINGS: {}
+- SPECIAL RATINGS: {}
+- TOTAL RATINGS: {}""" \
+        .format(self.path, self.notesFile, self.fileDir, self.judgeName, self.average, self.numJudgedFiles,
+                self.numSpecialFiles, self.numTotalFiles)
 
     def getJudgeRatings(self):
         """

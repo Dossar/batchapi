@@ -41,14 +41,14 @@ class JudgesForExcel():
         self.judgeToRating = {}
 
         # Rating information stuff
-        
-        
-    def dumpInfo(self):
-        print(logMsg("JUDGETOEXCEL","INFO"),"dumpInfo: Dumping Judge Notes Info")
-        print("- NOTES PATH:", self.path,
-              "\n- NOTES SET NAME:", self.setName,
-              "\n- NOTES FILES:", self.notesFiles,
-              "\n- JUDGE NAMES:", self.judgeNames)
+
+    def __str__(self):
+        print(logMsg("JUDGETOEXCEL", "INFO"), "dumpInfo: Dumping Judge Notes Info")
+        return """- NOTES PATH: {}
+- NOTES SET NAME: {}
+- NOTES FILES: {}
+- JUDGE NAMES: {}""" \
+        .format(self.path, self.setName, self.notesFiles, self.judgeNames)
 
     def getSetNumber(self):
         print(logMsg("JUDGETOEXCEL", "INFO"), "getSetNumber: Retrieving Set Number")
@@ -287,7 +287,7 @@ if __name__ == "__main__":
           "stepartists in them, you will get unexpected behavior.")
     notesDirPath = (input("Input full path of Set directory with Judge Notes: ")).strip()
     judgeSet = JudgesForExcel(notesDirPath)
-    judgeSet.dumpInfo()
+    print(judgeSet)
 
     # Get Judge Notes Files First along with Set Number
     judgeSet.getSetFileListing()

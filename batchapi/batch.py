@@ -45,13 +45,14 @@ class Batch():
         self.dwiFileFields = []
         self.songFolderInfo = {}
 
-    def dumpInfo(self):
-        print(logMsg("BATCH","INFO"),"dumpInfo: Dumping Batch Info")
-        print("- BATCH PATH:", self.path,
-              "\n- BATCH NAME:", self.name,
-              "\n- OUTPUT FILE:", self.outputFile,
-              "\n- SM FIELDS:", self.smFileFields,
-              "\n- DWI FIELDS:", self.dwiFileFields)
+    def __str__(self):
+        print(logMsg("BATCH", "INFO"), "dumpInfo: Dumping Batch Info")
+        return """- BATCH PATH: {}
+- BATCH NAME: {}
+- OUTPUT FILE: {}
+- SM FIELDS: {}
+- DWI FIELDS: {}""" \
+        .format(self.path, self.name, self.outputFile, self.smFileFields, self.dwiFileFields)
 
     def getBatchFileListing(self):
         print(logMsg("BATCH", "INFO"), "getBatchFileListing: Attempting to get song listing in '" + self.path + "'")
@@ -290,9 +291,9 @@ if __name__ == "__main__":
           ".csv file of this information.")
     batchPath = (input("Input full path to directory of Batch Set Folder: ")).strip()
     batchContainer = Batch(batchPath)
-    batchContainer.dumpInfo()
     batchContainer.setSmFileFields(['TITLE', 'ARTIST', 'STEPARTIST'])
     batchContainer.setDwiFileFields(['TITLE', 'ARTIST', 'STEPARTIST'])
+    print(batchContainer)
     batchContainer.getBatchFileListing()
     batchContainer.parseSongs()
     # batchContainer.printSongInfo()

@@ -5,8 +5,9 @@ import os
 import re
 import sys
 
+
 # CLASS DEFINITION
-class Batch(object):
+class Batch():
     """
     * CLASS ATTRIBUTES *
     - path: File path to the batch to search.
@@ -18,7 +19,7 @@ class Batch(object):
     - songFolderInfo: Dictionary storing info for each song folder in the batch
 
     * FUNCTIONS *
-    - dumpInfo(): Prints out information about the currently reference Batch Object
+    - __str__(): Prints out information about the currently reference Batch Object
     - getBatchFileListing(): Get a file listing of the batch directory
     - setSmFileFields(): Sets list of fields to search for in an .sm file
     - setDwiFileFields(): Sets list of fields to search for in a .dwi file
@@ -44,28 +45,31 @@ class Batch(object):
         self.dwiFileFields = []
         self.songFolderInfo = {}
 
-    def dumpInfo(self):
-        print(logMsg("BATCH","INFO"),"dumpInfo: Dumping Batch Info")
-        print("- BATCH PATH:", self.path,
-              "\n- BATCH NAME:", self.name,
-              "\n- OUTPUT FILE:", self.outputFile,
-              "\n- SM FIELDS:", self.smFileFields,
-              "\n- DWI FIELDS:", self.dwiFileFields)
+    def __str__(self):
+        print(logMsg("BATCH", "INFO"), "dumpInfo: Dumping Batch Info")
+        return """- BATCH PATH: {}
+- BATCH NAME: {}
+- OUTPUT FILE: {}
+- SM FIELDS: {}
+- DWI FIELDS: {}""" \
+        .format(self.path, self.name, self.outputFile, self.smFileFields, self.dwiFileFields)
 
     def getBatchFileListing(self):
-        print(logMsg("BATCH","INFO"),"getBatchFileListing: Attempting to get song listing in '" + self.path + "'")
+        print(logMsg("BATCH", "INFO"), "getBatchFileListing: Attempting to get song listing in '" + self.path + "'")
+
         try:
             self.batchFiles = os.listdir(self.path)
         except:
-            print(logMsg("BATCH","ERROR"), "getBatchFileListing: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("BATCH", "ERROR"), "getBatchFileListing: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                   str(sys.exc_info()[1])))
 
-    def setSmFileFields(self,fieldList):
+    def setSmFileFields(self, fieldList):
         self.smFileFields = fieldList
 
-    def setDwiFileFields(self,fieldList):
+    def setDwiFileFields(self, fieldList):
         self.dwiFileFields = fieldList
 
-    def parseChartFile(self,chartFolder,chartFile,chartType):
+    def parseChartFile(self, chartFolder, chartFile, chartType):
         """
         chartFolder is the full path to the folder.
 
@@ -77,11 +81,10 @@ class Batch(object):
         inside the chart file for the stepartist.
         """
         print(logMsg("BATCH","INFO"),"parseChartFile: Attempting to parse chart file '" + chartFile + "'")
-        os.chdir(chartFolder) # Change to song folder's context in the batch
+        os.chdir(chartFolder)  # Change to song folder's context in the batch
         songFieldInfo = {}
 
         try:
-
             # group(1) here refers to the captured field.
             if chartType == "sm":
                 with open(chartFile) as smFile:
@@ -89,15 +92,15 @@ class Batch(object):
                         if line.startswith('#'):
                             for field in self.smFileFields:
                                 if field == "TITLE":
-                                    continue # We're getting title and stepartist from folder
+                                    continue  # We're getting title and stepartist from folder
                                 if field == "STEPARTIST":
                                     continue
                                 else:
-                                    fieldSearch = re.search("^#"+field+":(.*);$",line)
-                                    if fieldSearch != None:
+                                    fieldSearch = re.search("^#"+field+":(.*);$", line)
+                                    if fieldSearch is not None:
                                         songFieldInfo[field] = fieldSearch.group(1)
                         else:
-                            break # No more hashtags means we're done with the song info at the top
+                            break  # No more hashtags means we're done with the song info at the top
 
             # group(1) here refers to the captured field.
             if chartType == "dwi":
@@ -106,17 +109,18 @@ class Batch(object):
                         if line.startswith('#'):
                             for field in self.dwiFileFields:
                                 if field == "TITLE":
-                                    continue # We're getting title and stepartist from folder
+                                    continue  # We're getting title and stepartist from folder
                                 if field == "STEPARTIST":
                                     continue
                                 else:
-                                    fieldSearch = re.search("^#"+field+":(.*);$",line)
-                                    if fieldSearch != None:
+                                    fieldSearch = re.search("^#"+field+":(.*);$", line)
+                                    if fieldSearch is not None:
                                         songFieldInfo[field] = fieldSearch.group(1)
                         else:
-                            break # No more hashtags means we're done with the song info at the top
+                            break  # No more hashtags means we're done with the song info at the top
         except:
-            print(logMsg("BATCH","ERROR"), "parseChartFile: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("BATCH", "ERROR"), "parseChartFile: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                              str(sys.exc_info()[1])))
             if 'TITLE' in self.smFileFields:
                 # songFieldInfo['TITLE'] = os.path.basename(os.path.normpath(chartFolder))
                 folderName = os.path.basename(os.path.normpath(chartFolder))
@@ -137,96 +141,98 @@ class Batch(object):
             songTitle = self.getSongTitleFromFolder(folderName)
             songFieldInfo['TITLE'] = songTitle
 
-        return songFieldInfo # Dictionary of file fields
+        return songFieldInfo  # Dictionary of file fields
 
-    def getSongTitleFromFolder(self,folder):
+    def getSongTitleFromFolder(self, folder):
         """
         folder is the name of the folder by itself.
         """
         
         # group(1) here refers to the captured field. Parse stepartist from song folder.
-        print(logMsg("BATCH","INFO"),"getSongTitleFromFolder: Retrieving song title from folder '" + folder + "'")
-        stepArtist = ""
+        print(logMsg("BATCH", "INFO"), "getSongTitleFromFolder: Retrieving song title from folder '" + folder + "'")
+
         try:
-            parenthesesArtist = re.search("(.*)\[(.*)\]$",folder)
-            bracketArtist = re.search("(.*)\((.*)\)$",folder)
-            curlybraceArtist = re.search("(.*)\{(.*)\}$",folder)
-            if parenthesesArtist != None:
-                song = parenthesesArtist.group(1).strip() # Song Title with parentheses stepartist
-            if bracketArtist != None:
-                song = bracketArtist.group(1).strip() # Song Title with brackets stepartist
-            if curlybraceArtist != None:
-                song = curlybraceArtist.group(1).strip() # Song Title with brackets stepartist
+            parenthesesArtist = re.search("(.*)\[(.*)\]$", folder)
+            bracketArtist = re.search("(.*)\((.*)\)$", folder)
+            curlybraceArtist = re.search("(.*)\{(.*)\}$", folder)
+            if parenthesesArtist is not None:
+                song = parenthesesArtist.group(1).strip()  # Song Title with parentheses stepartist
+            if bracketArtist is not None:
+                song = bracketArtist.group(1).strip()  # Song Title with brackets stepartist
+            if curlybraceArtist is not None:
+                song = curlybraceArtist.group(1).strip()  # Song Title with brackets stepartist
         except:
-            print(logMsg("BATCH","ERROR"), "getSongTitleFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("BATCH", "ERROR"), "getSongTitleFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                      str(sys.exc_info()[1])))
 
         return song
     
-    def getStepArtistFromFolder(self,folder):
+    def getStepArtistFromFolder(self, folder):
         """
         folder is the name of the folder by itself.
         """
         
         # group(1) here refers to the captured field. Parse stepartist from song folder.
         print(logMsg("BATCH","INFO"),"getStepArtistFromFolder: Retrieving stepartist from folder '" + folder + "'")
-        stepArtist = ""
+
         try:
-            parenthesesArtist = re.search(".*\[(.*)\]$",folder)
-            bracketArtist = re.search(".*\((.*)\)$",folder)
-            curlybraceArtist = re.search(".*\{(.*)\}$",folder)
-            if parenthesesArtist != None:
-                stepArtist = parenthesesArtist.group(1) # Stepartist with parentheses
-            if bracketArtist != None:
-                stepArtist = bracketArtist.group(1) # Stepartist with brackets
-            if curlybraceArtist != None:
-                stepArtist = curlybraceArtist.group(1) # Stepartist with brackets
+            parenthesesArtist = re.search(".*\[(.*)\]$", folder)
+            bracketArtist = re.search(".*\((.*)\)$", folder)
+            curlybraceArtist = re.search(".*\{(.*)\}$", folder)
+            if parenthesesArtist is not None:
+                stepArtist = parenthesesArtist.group(1)  # Stepartist with parentheses
+            if bracketArtist is not None:
+                stepArtist = bracketArtist.group(1)  # Stepartist with brackets
+            if curlybraceArtist is not None:
+                stepArtist = curlybraceArtist.group(1)  # Stepartist with brackets
         except:
-            print(logMsg("BATCH","ERROR"), "getStepArtistFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("BATCH", "ERROR"), "getStepArtistFromFolder: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                       str(sys.exc_info()[1])))
 
         return stepArtist
 
-    def getSongInfo(self,songFolder):
+    def getSongInfo(self, songFolder):
         """
         songFolder is the name of the folder by itself. It will be turned into the full file path
         """
         
-        os.chdir(self.path) # Change to batch directory context
+        os.chdir(self.path)  # Change to batch directory context
         songFolderFiles = os.listdir(songFolder)
         for file in songFolderFiles:
-
             try:
-                
                 # smSearch.group(0) is the match that contains .sm file name
-                smSearch = re.search("(.*\.sm)$",file)
-                if smSearch != None:
+                smSearch = re.search("(.*\.sm)$", file)
+                if smSearch is not None:
                     songFolderPath = os.path.join(self.path, songFolder)
-                    songInfo = self.parseChartFile(songFolderPath,file,"sm")
+                    songInfo = self.parseChartFile(songFolderPath, file, "sm")
                     self.songFolderInfo[songFolder] = songInfo
                     continue
 
                 # dwiSearch.group(0) is the match that contains .dwi file name
-                dwiSearch = re.search("(.*\.dwi)$",file)
-                if dwiSearch != None:
+                dwiSearch = re.search("(.*\.dwi)$", file)
+                if dwiSearch is not None:
                     songFolderPath = os.path.join(self.path, songFolder)
-                    songInfo = self.parseChartFile(songFolderPath,file,"dwi")
+                    songInfo = self.parseChartFile(songFolderPath, file, "dwi")
                     self.songFolderInfo[songFolder] = songInfo
-
             except:
-                print(logMsg("BATCH","ERROR"), "getSongInfo: Something went wrong trying to parse through '" + songFolder + "'")
-                print(logMsg("BATCH","ERROR"), "getSongInfo: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+                print(logMsg("BATCH", "ERROR"), "getSongInfo: Something went wrong trying to parse through '"
+                      + songFolder + "'")
+                print(logMsg("BATCH", "ERROR"), "getSongInfo: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                               str(sys.exc_info()[1])))
 
     def parseSongs(self):
         """
         folder is the name of the folder by itself. It will be turned into the full file path
         However since not every file in the batch could be a folder, keep file cases in mind
         """
-        if self.batchFiles != []:
-            print(logMsg("BATCH","INFO"),"parseSongs: Looking through batch files")
+        if self.batchFiles is not []:
+            print(logMsg("BATCH", "INFO"), "parseSongs: Looking through batch files")
             for folder in self.batchFiles:
                 try:
                     self.getSongInfo(folder)
                 except:
-                    print(logMsg("BATCH","ERROR"), "parseSongs: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+                    print(logMsg("BATCH", "ERROR"), "parseSongs: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                  str(sys.exc_info()[1])))
 
     def printSongInfo(self):
         """
@@ -234,7 +240,7 @@ class Batch(object):
         """
         print(logMsg("BATCH","INFO"),"printSongInfo: Printing out parsed songs")
         for folder in self.songFolderInfo.keys():
-            print(folder,"-->",self.songFolderInfo[folder])
+            print(folder, "-->", self.songFolderInfo[folder])
 
     def clearBatchFiles(self):
         self.batchFiles = []
@@ -244,8 +250,9 @@ class Batch(object):
 
     def createCsvSongListing(self):
         try:
-            print(logMsg("BATCH","INFO"),"createCsvSongListing: Attempting to write CSV File '" + self.outputFile + "'")
-            os.chdir(self.path) # Change to batch directory context
+            print(logMsg("BATCH", "INFO"), "createCsvSongListing: Attempting to write CSV File '" + self.outputFile
+                  + "'")
+            os.chdir(self.path)  # Change to batch directory context
             sortedFolders = sorted(self.songFolderInfo.keys(), key=str.lower)
             sortedSongFields = sorted(self.songFolderInfo[sortedFolders[0]].keys(), key=str.lower)
             header = "[FOLDER]"
@@ -265,28 +272,29 @@ class Batch(object):
                         fieldWithoutCommas = self.songFolderInfo[folder][songField] + ","
                         fieldWithoutCommas = re.sub(',', '', fieldWithoutCommas)
                         if fieldWithoutCommas == "":
-                            print(logMsg("BATCH","WARNING"),"createCsvSongListing: '" + folder + "' has empty field for '" + songField + "'")
+                            print(logMsg("BATCH", "WARNING"), "createCsvSongListing: '" + folder
+                                  + "' has empty field for '" + songField + "'")
                         songInfoString += "," + fieldWithoutCommas
                     batchInfo.write(songInfoString+"\n")
             batchInfo.close()
-            print(logMsg("BATCH","INFO"),"createCsvSongListing: Successfully wrote CSV File '" + self.outputFile + "'")
+            print(logMsg("BATCH", "INFO"), "createCsvSongListing: Successfully wrote CSV File '" + self.outputFile + "'")
         except:
-            print(logMsg("BATCH","ERROR"), "createCsvSongListing: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
-        
-    
+            print(logMsg("BATCH", "ERROR"), "createCsvSongListing: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                    str(sys.exc_info()[1])))
+
 # MAIN
 # Use C:\pythoncode\batchApis\suites\batch for testing.
 if __name__ == "__main__":
 
     # Create Batch Object.
-    print("batch.py looks through a batch set song directory and retrieves song information from it, then generates a .csv file of this information.")
+    print("batch.py looks through a batch set song directory and retrieves song information from it, then generates a "
+          ".csv file of this information.")
     batchPath = (input("Input full path to directory of Batch Set Folder: ")).strip()
     batchContainer = Batch(batchPath)
-    batchContainer.setSmFileFields(['TITLE','ARTIST','STEPARTIST'])
-    batchContainer.setDwiFileFields(['TITLE','ARTIST','STEPARTIST'])
-    batchContainer.dumpInfo()
+    batchContainer.setSmFileFields(['TITLE', 'ARTIST', 'STEPARTIST'])
+    batchContainer.setDwiFileFields(['TITLE', 'ARTIST', 'STEPARTIST'])
+    print(batchContainer)
     batchContainer.getBatchFileListing()
     batchContainer.parseSongs()
     # batchContainer.printSongInfo()
     batchContainer.createCsvSongListing()
-    

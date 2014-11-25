@@ -2,13 +2,13 @@
 
 from utilities.logMsg import logMsg
 import os
-import re
 import sys
 
+
 # CLASS DEFINITION
-class NotesTemplate(object):
+class NotesTemplate():
     """
-    This class is used for creating a template judge noets file.
+    This class is used for creating a template judge notes file.
     It takes a CSV file generated from batch.py and then
     creates the template from there.
 
@@ -28,15 +28,15 @@ class NotesTemplate(object):
     * FUNCTIONS *
     - dumpInfo(): Prints out information about currently referenced NotesTemplate Object
     """
-    
+
     def __init__(self, csvPath, searchList):
         """
         Constructor
         """
         self.path = csvPath
-        self.fileDir = os.path.abspath(os.path.join(os.path.dirname( self.path ), '.'))
+        self.fileDir = os.path.abspath(os.path.join(os.path.dirname(self.path), '.'))
         self.csvFile = os.path.basename(os.path.normpath(self.path))
-        self.batchName = (os.path.basename(os.path.normpath(self.path))).split(".csv")[0]
+        self.batchName = str((os.path.basename(os.path.normpath(self.path))).split(".csv")[0])
         self.outputFile = "template_" + self.batchName + ".txt"
         self.searchFields = searchList
         self.fieldToIndex = {}
@@ -45,17 +45,19 @@ class NotesTemplate(object):
         self.stepperIndex = 0
         self.artistIndex = 0
 
-    def dumpInfo(self):
-        print(logMsg("NOTESTEMPLATE","INFO"),"dumpInfo: Dumping Batch Info")
-        print("- CSV FILE PATH:", self.path,
-              "\n- CSV FILE DIR:", self.fileDir,
-              "\n- CSV FILE NAME:", self.csvFile,
-              "\n- BATCH NAME:", self.batchName,
-              "\n- OUTPUT FILE:", self.outputFile,
-              "\n- COMPARISON FIELDS:", self.searchFields,
-              "\n- TITLE INDEX:", self.titleIndex,
-              "\n- STEPARTIST INDEX:", self.stepperIndex,
-              "\n- SONG ARTIST INDEX:", self.artistIndex)
+    def __str__(self):
+        print(logMsg("NOTESTEMPLATE", "INFO"), "dumpInfo: Dumping Batch Info")
+        return """- CSV FILE PATH: {}
+- CSV FILE DIR: {}
+- CSV FILE NAME: {}
+- BATCH NAME: {}
+- OUTPUT FILE: {}
+- COMPARISON FIELDS: {}
+- TITLE INDEX: {}
+- STEPARTIST INDEX: {}
+- SONG ARTIST INDEX: {}""" \
+        .format(self.path, self.fileDir, self.csvFile, self.batchName, self.outputFile, self.searchFields,
+                self.titleIndex, self.stepperIndex, self.artistIndex)
 
     def getFieldIndices(self):
         """
@@ -69,22 +71,23 @@ class NotesTemplate(object):
         will be used after this to get indices of fields we actually want.
         """
 
-        print(logMsg("NOTESTEMPLATE","INFO"),"getFieldIndices: Parsing CSV File's Column Header")
+        print(logMsg("NOTESTEMPLATE", "INFO"), "getFieldIndices: Parsing CSV File's Column Header")
         try:
-            os.chdir(self.fileDir) # Change to csv file directory context
+            os.chdir(self.fileDir)  # Change to csv file directory context
             with open(self.csvFile) as fileCSV:
                 for line in fileCSV:
                     if line.startswith('[FOLDER]'):
                         break
             fileCSV.close()
             rawFieldList = line.strip().split(",")
-            counter = 0 # Fields start at index 0
+            counter = 0  # Fields start at index 0
             for field in rawFieldList:
                 rawField = field.strip("[]\s")
                 self.fieldToIndex[rawField] = counter
-                counter += 1 # Indicate the index for the next field
+                counter += 1  # Indicate the index for the next field
         except:
-            print(logMsg("NOTESTEMPLATE","ERROR"), "getFieldIndices: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("NOTESTEMPLATE", "ERROR"), "getFieldIndices: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                       str(sys.exc_info()[1])))
 
     def getRelevantFields(self):
         """
@@ -93,7 +96,7 @@ class NotesTemplate(object):
         with the 'field':index mappings.
         """
 
-        print(logMsg("NOTESTEMPLATE","INFO"),"getRelevantFields: Getting Indices of Relevant Comparison Fields")
+        print(logMsg("NOTESTEMPLATE", "INFO"), "getRelevantFields: Getting Indices of Relevant Comparison Fields")
         try:
             for searchField in self.searchFields:
                 index = self.fieldToIndex[searchField]
@@ -105,7 +108,8 @@ class NotesTemplate(object):
                 if searchField == 'ARTIST':
                     self.artistIndex = self.fieldToIndex[searchField]
         except:
-            print(logMsg("NOTESTEMPLATE","ERROR"), "getRelevantFields: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("NOTESTEMPLATE", "ERROR"), "getRelevantFields: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                         str(sys.exc_info()[1])))
 
     def printTemplate(self):
         """
@@ -122,27 +126,28 @@ class NotesTemplate(object):
         if the song name and song artist look similar enough.
         """
 
-        print(logMsg("NOTESTEMPLATE","INFO"),"printTemplate: Testing parsing for writing file")
+        print(logMsg("NOTESTEMPLATE", "INFO"), "printTemplate: Testing parsing for writing file")
         try:
-            os.chdir(self.fileDir) # Change to csv file directory context
+            os.chdir(self.fileDir)  # Change to csv file directory context
             with open(self.csvFile) as fileCSV:
                 print("")
                 for line in fileCSV:
                     if line.startswith('[FOLDER]'):
                         continue
-                    lineValues = line.split(",") # CSV file separates fields by commas
+                    lineValues = line.split(",")  # CSV file separates fields by commas
                     songTitle = lineValues[self.titleIndex].strip()
                     songArtist = lineValues[self.artistIndex].strip()
                     stepArtist = lineValues[self.stepperIndex].strip()
                     if songTitle == "":
-                        songTitle = lineValues[0].strip() # First CSV column is ALWAYS folder name
+                        songTitle = lineValues[0].strip()  # First CSV column is ALWAYS folder name
                     if songArtist == "":
-                        songArtist = "UNKNOWN" # this is a way of indicating files where artist names weren't parsed
+                        songArtist = "UNKNOWN"  # this is a way of indicating files where artist names weren't parsed
                     stringToPrint = "[/10] " + songTitle + " {" + songArtist + "}\n-\n-\n"
                     print(stringToPrint)
             fileCSV.close()
         except:
-            print(logMsg("NOTESTEMPLATE","ERROR"), "printTemplate: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
+            print(logMsg("NOTESTEMPLATE", "ERROR"), "printTemplate: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                     str(sys.exc_info()[1])))
 
     def writeTemplateFile(self):
         """
@@ -150,50 +155,45 @@ class NotesTemplate(object):
         the judge notes template file. printTemplate is used for testing.
         """
 
-        print(logMsg("NOTESTEMPLATE","INFO"),"writeTemplateFile: Writing Template File '" + self.outputFile + "'")
+        print(logMsg("NOTESTEMPLATE", "INFO"), "writeTemplateFile: Writing Template File '" + self.outputFile + "'")
         try:
-            os.chdir(self.fileDir) # Change to csv file directory context
+            os.chdir(self.fileDir)  # Change to csv file directory context
             with open(self.outputFile, 'w') as template:
                 with open(self.csvFile) as fileCSV:
                     for line in fileCSV:
                         if line.startswith('[FOLDER]'):
                             continue
-                        lineValues = line.split(",") # CSV file separates fields by commas
+                        lineValues = line.split(",")  # CSV file separates fields by commas
                         songTitle = lineValues[self.titleIndex].strip()
                         songArtist = lineValues[self.artistIndex].strip()
                         stepArtist = lineValues[self.stepperIndex].strip()
                         if songTitle == "":
-                            songTitle = lineValues[0].strip() # First CSV column is ALWAYS folder name
+                            songTitle = lineValues[0].strip()  # First CSV column is ALWAYS folder name
                         if songArtist == "":
-                            songArtist = "UNKNOWN" # this is a way of indicating files where artist names weren't parsed
+                            songArtist = "UNKNOWN"  # this is a way of indicating files where artist names weren't parsed
                         lineToWrite = "[/10] " + songTitle + " {" + songArtist + "}\n-\n-\n\n"
                         template.write(lineToWrite)
             fileCSV.close()
-            print(logMsg("NOTESTEMPLATE","INFO"),"writeTemplateFile: Successfully wrote file '" + self.outputFile + "'")
+            print(logMsg("NOTESTEMPLATE", "INFO"), "writeTemplateFile: Successfully wrote file '" + self.outputFile
+                  + "'")
         except:
-            print(logMsg("NOTESTEMPLATE","ERROR"), "writeTemplateFile: {0}: {1}".format(sys.exc_info()[0].__name__, str(sys.exc_info()[1])))
-        
-
+            print(logMsg("NOTESTEMPLATE", "ERROR"), "writeTemplateFile: {0}: {1}".format(sys.exc_info()[0].__name__,
+                                                                                         str(sys.exc_info()[1])))
 
 # MAIN
 # Use C:\pythoncode\batchApis\suites\batch\batch.csv for testing.
 if __name__ == "__main__":
-    
     # Create Template Object.
     print("notestemplate.py is used to generate a template judge notes file from the .csv file generated in batch.py")
     print("It is assumed here you already have run batch.py to make this .csv file.")
     inputCSV = (input("Input Full Path to .csv File generated from batch.py: ")).strip()
-    searchList = ['ARTIST','TITLE','STEPARTIST'] # Same song title and same song artist for comparison
-    templateNotes = NotesTemplate(inputCSV,searchList)
-    templateNotes.dumpInfo()
+    searchList = ['ARTIST', 'TITLE', 'STEPARTIST']  # Same song title and same song artist for comparison
+    templateNotes = NotesTemplate(inputCSV, searchList)
+    print(templateNotes)
 
-    
     templateNotes.getFieldIndices()
     templateNotes.getRelevantFields()
-    templateNotes.dumpInfo()
-
+    print(templateNotes)
 
     templateNotes.printTemplate()
     templateNotes.writeTemplateFile()
-    
-    

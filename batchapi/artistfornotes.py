@@ -147,7 +147,7 @@ if __name__ == "__main__":
     inputCSV = (input("Input Full Path to .csv File generated from batch.py: ")).strip()
     searchList = ['STEPARTIST']  # Same song title and same song artist for comparison
     artistAdd = ArtistForNotes(inputCSV, searchList)
-    artistAdd.dumpInfo()
+    print(artistAdd)
 
     # Get relevant fields from CSV file from batch.py
     artistAdd.getFieldIndices()

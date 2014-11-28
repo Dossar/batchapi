@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
-import os
-import re
-import sys
-from containers.batchcontainer import *
+from containers.batchcontainer import BatchContainer
 
 # MAIN
 # C:\pythoncode\batchApis\tests\batch

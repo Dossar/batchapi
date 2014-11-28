@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
-import os
-import re
-import sys
-from containers.notestemplate import *
+from containers.notestemplate import NotesTemplate
 
 # MAIN
 if __name__ == "__main__":

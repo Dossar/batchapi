@@ -3,7 +3,7 @@
 import os
 import re
 import sys
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 # Create Logger Object with date formatting for output stream
 import logging

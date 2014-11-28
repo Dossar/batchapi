@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 
-import os
-import re
-import sys
 from containers.judge import JudgeNotes
 
 # MAIN

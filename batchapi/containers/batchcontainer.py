@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 
-import os
-import re
-import sys
 from containers.simfile import *
 
 # Create Logger Object with date formatting for output stream

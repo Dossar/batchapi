@@ -1,9 +1,6 @@
 #!/usr/bin/python3
 
-import os
-import re
-import sys
-from containers.notestemplate import *
+from containers.notestemplate import ArtistForNotes
 
 # MAIN
 # This is used to simply append the stepartist to the song information lines in a judge notes file.

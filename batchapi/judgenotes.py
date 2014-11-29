@@ -30,4 +30,4 @@ if __name__ == "__main__":
     # judge.printRawRatings()
     print(">>> Writing Raw Ratings File.")
     judge.writeRawRatings()
-    print(">>> See '/tmp/judgeNotes_log.log' for more output.")
+    print(">>> See '/tmp/judgeNotes.log' for more output.")

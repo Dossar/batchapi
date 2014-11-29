@@ -5,14 +5,29 @@ import re
 import sys
 from abc import abstractmethod
 
-# Create Logger Object with date formatting for output stream
+###########
+# LOGGERS #
+###########
+
+# Date formatting will be the same for all loggers
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(asctime)s] %(name)s: %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/simfile_log.log',
-                    filemode='w')
+dateformatter = logging.Formatter('[%(asctime)s] %(name)s: %(levelname)s: %(message)s')
+
+# Make simfileLogger logger object.
 simfileLogger = logging.getLogger("SIMFILE")
+simfileLogger.setLevel(logging.DEBUG)
+simfileFileH = logging.FileHandler('/tmp/simfile.log')
+simfileFileH.setLevel(logging.DEBUG)
+simfileConsoleH = logging.StreamHandler()
+simfileConsoleH.setLevel(logging.WARNING)
+simfileFileH.setFormatter(dateformatter)
+simfileConsoleH.setFormatter(dateformatter)
+simfileLogger.addHandler(simfileFileH)  # File Handler add
+simfileLogger.addHandler(simfileConsoleH)  # Console Handler add
+
+########################
+# FUNCTION DEFINITIONS #
+########################
 
 def getSongTitleFromFolder(folder):
     """
@@ -59,6 +74,10 @@ def getStepArtistFromFolder(folder):
                                                                          str(sys.exc_info()[1])))
 
     return stepArtist
+
+#####################
+# CLASS DEFINITIONS #
+#####################
 
 class Simfile():
     """

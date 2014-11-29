@@ -10,7 +10,6 @@ if __name__ == "__main__":
           "stepartists in them, you will get unexpected behavior.")
     notesDirPath = (input(">>> Input full path of Set directory with Judge Notes: ")).strip()
     judgeSet = JudgesForExcel(notesDirPath)
-    print(judgeSet)
 
     # Get Judge Notes Files First along with Set Number
     judgeSet.getSetFileListing()
@@ -26,8 +25,9 @@ if __name__ == "__main__":
 
     # Now get all the judge ratings
     judgeSet.getAllJudgeRatings()
+    print(judgeSet)
 
     # Test printing out CSV file
     print(">>> Creating CSV file.")
     judgeSet.createRatingCSV()
-    print(">>> See '/tmp/judgeNotes_log.log' for more output.")
+    print(">>> See '/tmp/judgesExcelLogger.log' for more output.")

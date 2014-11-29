@@ -2,16 +2,30 @@
 
 from containers.simfile import *
 
-# Create Logger Object with date formatting for output stream
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(asctime)s] %(name)s: %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/batch_log.log',
-                    filemode='w')
-batchLogger = logging.getLogger("BATCH")
+###########
+# LOGGERS #
+###########
 
-# CLASS DEFINITION
+# Date formatting will be the same for all loggers
+import logging
+dateformatter = logging.Formatter('[%(asctime)s] %(name)s: %(levelname)s: %(message)s')
+
+# Make batchLogger logger object.
+batchLogger = logging.getLogger("BATCH")
+batchLogger.setLevel(logging.DEBUG)
+batchFileH = logging.FileHandler('/tmp/batchContainer.log')
+batchFileH.setLevel(logging.DEBUG)
+batchConsoleH = logging.StreamHandler()
+batchConsoleH.setLevel(logging.WARNING)
+batchFileH.setFormatter(dateformatter)
+batchConsoleH.setFormatter(dateformatter)
+batchLogger.addHandler(batchFileH)  # File Handler add
+batchLogger.addHandler(batchConsoleH)  # Console Handler add
+
+#####################
+# CLASS DEFINITIONS #
+#####################
+
 class BatchContainer():
     """
     * PURPOSE *

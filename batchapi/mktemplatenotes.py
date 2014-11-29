@@ -20,5 +20,5 @@ if __name__ == "__main__":
     # Write out notes after getting relevant fields information.
     # templateNotes.printTemplate()
     print(">>> Writing out Template Judge Notes File")
-    print(">>> See '/tmp/notesTemplate_log.log' for more output.")
+    print(">>> See '/tmp/notesTemplate.log' for more output.")
     templateNotes.writeTemplateFile()

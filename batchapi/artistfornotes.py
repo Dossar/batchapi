@@ -30,4 +30,4 @@ if __name__ == "__main__":
     print(">>> Getting stepartist for each song and adding them to judge notes file.")
     artistAdd.getAllSteppers()
     artistAdd.addSteppersToFile()
-    print(">>> See '/tmp/notesTemplate_log.log' for more output.")
+    print(">>> See '/tmp/artistToNotes.log' for more output.")

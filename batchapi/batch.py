@@ -23,4 +23,6 @@ if __name__ == "__main__":
     batch.construct()
     batch.parseSimfiles()
     print(batch)
+    print(">>> Creating .csv file of song information.")
     batch.createCsvSongListing()
+    print(">>> See '/tmp/batchContainer.log' for more output.")

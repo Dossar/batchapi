@@ -4,24 +4,42 @@ import os
 import re
 import sys
 
-# Create Logger Object with date formatting for output stream
+###########
+# LOGGERS #
+###########
+
+# Date formatting will be the same for all loggers
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(asctime)s] %(name)s: %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/judgeNotes_log.log',
-                    filemode='w')
+dateformatter = logging.Formatter('[%(asctime)s] %(name)s: %(levelname)s: %(message)s')
+
+# Make judgeNotesLogger logger object.
 judgeNotesLogger = logging.getLogger("JUDGENOTES")
+judgeNotesLogger.setLevel(logging.DEBUG)
+judgeNotesFileH = logging.FileHandler('/tmp/judgeNotes.log')
+judgeNotesFileH.setLevel(logging.DEBUG)
+judgeNotesConsoleH = logging.StreamHandler()
+judgeNotesConsoleH.setLevel(logging.WARNING)
+judgeNotesFileH.setFormatter(dateformatter)
+judgeNotesConsoleH.setFormatter(dateformatter)
+judgeNotesLogger.addHandler(judgeNotesFileH)  # File Handler add
+judgeNotesLogger.addHandler(judgeNotesConsoleH)  # Console Handler add
 
-# Create Logger Object with date formatting for output stream
-logging.basicConfig(level=logging.DEBUG,
-                    format='[%(asctime)s] %(name)s: %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/judgesForExcel_log.log',
-                    filemode='w')
+# Make judgesExcelLogger logger object.
 judgesExcelLogger = logging.getLogger("JUDGESFOREXCEL")
+judgesExcelLogger.setLevel(logging.DEBUG)
+judgesExcelLoggerFileH = logging.FileHandler('/tmp/judgesExcelLogger.log')
+judgesExcelLoggerFileH.setLevel(logging.DEBUG)
+judgesExcelLoggerConsoleH = logging.StreamHandler()
+judgesExcelLoggerConsoleH.setLevel(logging.WARNING)
+judgesExcelLoggerFileH.setFormatter(dateformatter)
+judgesExcelLoggerConsoleH.setFormatter(dateformatter)
+judgesExcelLogger.addHandler(judgesExcelLoggerFileH)  # File Handler add
+judgesExcelLogger.addHandler(judgesExcelLoggerConsoleH)  # Console Handler add
 
-# CLASS DEFINITION
+#####################
+# CLASS DEFINITIONS #
+#####################
+
 class JudgeNotes():
     """
     * CLASS ATTRIBUTES *

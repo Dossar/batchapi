@@ -13,24 +13,42 @@ import re
 import os
 import sys
 
-# Create Logger Object with date formatting for output stream
+###########
+# LOGGERS #
+###########
+
+# Date formatting will be the same for all loggers
 import logging
-logging.basicConfig(level=logging.INFO,
-                    format='[%(asctime)s] %(name)s: %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/notesTemplate_log.log',
-                    filemode='w')
+dateformatter = logging.Formatter('[%(asctime)s] %(name)s: %(levelname)s: %(message)s')
+
+# Make notesTemplateLogger logger object.
 notesTemplateLogger = logging.getLogger("NOTESTEMPLATE")
+notesTemplateLogger.setLevel(logging.DEBUG)
+notesTemplateFileH = logging.FileHandler('/tmp/notesTemplate.log')
+notesTemplateFileH.setLevel(logging.DEBUG)
+notesTemplateConsoleH = logging.StreamHandler()
+notesTemplateConsoleH.setLevel(logging.WARNING)
+notesTemplateFileH.setFormatter(dateformatter)
+notesTemplateConsoleH.setFormatter(dateformatter)
+notesTemplateLogger.addHandler(notesTemplateFileH)  # File Handler add
+notesTemplateLogger.addHandler(notesTemplateConsoleH)  # Console Handler add
 
-# Create Logger Object with date formatting for output stream
-logging.basicConfig(level=logging.INFO,
-                    format='[%(asctime)s] %(name)s: %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='/tmp/artistfornotes_log.log',
-                    filemode='w')
+# Make artistToNotesLogger logger object.
 artistToNotesLogger = logging.getLogger("ARTISTFORNOTES")
+artistToNotesLogger.setLevel(logging.DEBUG)
+artistToNotesFileH = logging.FileHandler('/tmp/artistToNotes.log')
+artistToNotesFileH.setLevel(logging.DEBUG)
+artistToNotesConsoleH = logging.StreamHandler()
+artistToNotesConsoleH.setLevel(logging.WARNING)
+artistToNotesFileH.setFormatter(dateformatter)
+artistToNotesConsoleH.setFormatter(dateformatter)
+artistToNotesLogger.addHandler(artistToNotesFileH)  # File Handler add
+artistToNotesLogger.addHandler(artistToNotesConsoleH)  # Console Handler add
 
-# CLASS DEFINITION
+#####################
+# CLASS DEFINITIONS #
+#####################
+
 class NotesTemplate():
     """
     This class is used for creating a template judge notes file.

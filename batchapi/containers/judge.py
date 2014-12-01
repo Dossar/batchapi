@@ -164,14 +164,14 @@ class JudgeNotes():
 
         # I wasn't able to do a generalized capture here because weird things happened
         # For instance, !, +, -, and * were captured, but with #, <, and $ things got weird
-        passRating = re.search("^\[(PASS).*\]", ratingLine)
-        plus = re.search("^\[(\+\+).*\]", ratingLine)
-        negative = re.search("^\[(--).*\]", ratingLine)
-        bang = re.search("^\[(!).*\]", ratingLine)
-        star = re.search("^\[(\*).*\]", ratingLine)
-        pound = re.search("^\[(#).*\]", ratingLine)
-        arrow = re.search("^\[(<)\]", ratingLine)
-        dollar = re.search("^\[(\$)\]", ratingLine)
+        passRating = re.search("^\[.*(PASS).*\]", ratingLine)
+        plus = re.search("^\[.*(\+\+).*\]", ratingLine)
+        negative = re.search("^\[.*(--).*\]", ratingLine)
+        bang = re.search("^\[.*(!).*\]", ratingLine)
+        star = re.search("^\[.*(\*).*\]", ratingLine)
+        pound = re.search("^\[.*(#).*\]", ratingLine)
+        arrow = re.search("^\[.*(<).*\]", ratingLine)
+        dollar = re.search("^\[.*(\$).*\]", ratingLine)
         songInfo = []
         rating = 0
         try:
@@ -214,19 +214,34 @@ class JudgeNotes():
                 return
             elif star is not None:
                 specialTuple = self.handleSpecialRating(star.group(1).strip(), ratingLine)
-                self.specialSongList.append(specialTuple)
+                numeric = re.search("[\d]+", specialTuple[1])
+                if numeric is not None:
+                    self.judgedSongList.append(specialTuple)
+                else:
+                    self.specialSongList.append(specialTuple)
                 return
             elif pound is not None:
                 specialTuple = self.handleSpecialRating(pound.group(1).strip(), ratingLine)
-                self.specialSongList.append(specialTuple)
+                numeric = re.search("[\d]+", specialTuple[1])
+                if numeric is not None:
+                    self.judgedSongList.append(specialTuple)
+                else:
+                    self.specialSongList.append(specialTuple)
                 return
             elif arrow is not None:
                 specialTuple = self.handleSpecialRating(arrow.group(1).strip(), ratingLine)
-                self.specialSongList.append(specialTuple)
+                numeric = re.search("[\d]+", specialTuple[1])
+                if numeric is not None:
+                    self.judgedSongList.append(specialTuple)
+                else:
+                    self.specialSongList.append(specialTuple)
                 return
             elif dollar is not None:
-                specialTuple = self.handleSpecialRating(dollar.group(1).strip(), ratingLine)
-                self.specialSongList.append(specialTuple)
+                numeric = re.search("[\d]+", specialTuple[1])
+                if numeric is not None:
+                    self.judgedSongList.append(specialTuple)
+                else:
+                    self.specialSongList.append(specialTuple)
                 return            
         
         except:
@@ -250,30 +265,37 @@ class JudgeNotes():
         """
         try:
             songInfo = []
-            ratingStepartist = re.search("^\[\\"+symbol+"[10/]*\](.*)\{(.*)\}[\s]*\((.*)\)$", lineToParse)
-            ratingNoStepartist = re.search("^\[\\"+symbol+"[10/]*\](.*)\{(.*)\}$", lineToParse)
+            rating = None
+            ratingStepartist = re.search("^\[([\d]*\.?[\d]?)\\"+symbol+"[10/]*\](.*)\{(.*)\}[\s]*\((.*)\)$", lineToParse)
+            ratingNoStepartist = re.search("^\[([\d]*\.?[\d]?)\\"+symbol+"[10/]*\](.*)\{(.*)\}$", lineToParse)
             if ratingStepartist is not None:
                 judgeNotesLogger.debug("handleSpecialRating: Found rating with stepartist on special "
                                        "rating '%s'", symbol)
                 # ratingStepartist.group(0) # Full match
-                songInfo = [ratingStepartist.group(1).strip(),  # Song Title
-                            ratingStepartist.group(2).strip(),  # Song Artist
-                            ratingStepartist.group(3).strip()]  # Stepartist
+                songInfo = [ratingStepartist.group(2).strip(),  # Song Title
+                            ratingStepartist.group(3).strip(),  # Song Artist
+                            ratingStepartist.group(4).strip()]  # Stepartist
+                rating = str(ratingStepartist.group(1).strip())  # Subrating
             elif ratingNoStepartist is not None:
                 judgeNotesLogger.debug("handleSpecialRating: Found rating without stepartist on special "
                                        "rating '%s'", symbol)
                 # ratingNoStepartist.group(0) # Full Match
-                songInfo = [ratingNoStepartist.group(1).strip(),  # Song Title
-                            ratingNoStepartist.group(2).strip(),  # Song Artist
+                songInfo = [ratingNoStepartist.group(2).strip(),  # Song Title
+                            ratingNoStepartist.group(3).strip(),  # Song Artist
                             ""]  # Stepartist placeholder, used for compatibility
-
+                rating = str(ratingNoStepartist.group(1).strip())  # Subrating
+                
             # ++ is a guaranteed 10, and -- and ! are guaranteed 0.
+            if rating is "":
+                rating = symbol
+                
             if symbol == "++":
                 rating = '10'
             elif symbol == "--" or symbol == "!":
                 rating = '0'
-            else:
-                rating = symbol
+
+            judgeNotesLogger.debug("handleSpecialRating: rating is '%s'", rating)
+            judgeNotesLogger.debug("handleSpecialRating: songInfo is ('%s','%s')", str(songInfo), str(rating))
 
             return songInfo, rating
         except:
@@ -707,22 +729,22 @@ class JudgesForExcel():
         """
 
         ratingStepartist = re.search("^\[([\d]+\.?[\d]?)/10\](.*)\{(.*)\}[\s]*\((.*)\)$", ratingLine)
-        passRating = re.search("^\[(PASS).*\]", ratingLine)
-        plus = re.search("^\[(\+\+).*\]", ratingLine)
-        negative = re.search("^\[(--).*\]", ratingLine)
-        bang = re.search("^\[(!).*\]", ratingLine)
-        star = re.search("^\[(\*).*\]", ratingLine)
-        pound = re.search("^\[(#).*\]", ratingLine)
-        arrow = re.search("^\[(<).*\]", ratingLine)
-        dollar = re.search("^\[(\$).*\]", ratingLine)
+        passRating = re.search("^\[([\d]*\.?[\d]?)(PASS).*\]", ratingLine)
+        plus = re.search("^\[([\d]*\.?[\d]?)(\+\+).*\]", ratingLine)
+        negative = re.search("^\[([\d]*\.?[\d]?)(--).*\]", ratingLine)
+        bang = re.search("^\[([\d]*\.?[\d]?)(!).*\]", ratingLine)
+        star = re.search("^\[([\d]*\.?[\d]?)(\*).*\]", ratingLine)
+        pound = re.search("^\[([\d]*\.?[\d]?)(#).*\]", ratingLine)
+        arrow = re.search("^\[([\d]*\.?[\d]?)(<).*\]", ratingLine)
+        dollar = re.search("^\[([\d]*\.?[\d]?)(\$).*\]", ratingLine)
 
         try:
             # Retrieve song information from line.
             if ratingStepartist is not None:
-                rating = str(ratingStepartist.group(1))  # Rating number itself
+                rating = str(ratingStepartist.group(1).strip())  # Rating number itself
                 return rating
             elif passRating is not None:
-                return passRating.group(1).strip()
+                return passRating.group(2).strip()
             elif plus is not None:
                 return "10"  # A '++' is a 10/10
             elif negative is not None:
@@ -730,13 +752,29 @@ class JudgesForExcel():
             elif bang is not None:
                 return "0"  # A '!' is a 0/10
             elif star is not None:
-                return star.group(1).strip()
+                rating = str(star.group(1).strip())
+                if rating is not "":
+                    return rating
+                else:
+                    return star.group(2).strip()
             elif pound is not None:
-                return pound.group(1).strip()
+                rating = str(pound.group(1).strip())
+                if rating is not "":
+                    return rating
+                else:
+                    return pound.group(2).strip()
             elif arrow is not None:
-                return arrow.group(1).strip()
+                rating = str(arrow.group(1).strip())
+                if rating is not "":
+                    return rating
+                else:
+                    return arrow.group(2).strip()
             elif dollar is not None:
-                return dollar.group(1).strip()
+                rating = str(dollar.group(1).strip())
+                if rating is not "":
+                    return rating
+                else:
+                    return dollar.group(2).strip()
         except:
             judgesExcelLogger.warning("getSimpleRating: {0}: {1}".format(sys.exc_info()[0].__name__,
                                                                          str(sys.exc_info()[1])))

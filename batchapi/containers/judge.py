@@ -237,6 +237,7 @@ class JudgeNotes():
                     self.specialSongList.append(specialTuple)
                 return
             elif dollar is not None:
+                specialTuple = self.handleSpecialRating(dollar.group(1).strip(), ratingLine)
                 numeric = re.search("[\d]+", specialTuple[1])
                 if numeric is not None:
                     self.judgedSongList.append(specialTuple)

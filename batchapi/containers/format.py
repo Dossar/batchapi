@@ -90,10 +90,20 @@ class FormatNotes():
         try:
             os.chdir(self.path)
             with open(self.setPostFile, 'w') as post:
+
+                # Write the top of the post. This also includes the order of the judges.
                 post.write("[b][size=7]SET {0}[/size][/b]\n".format(self.setNumber))
+                counter = 1 # For order of the judges
                 for notesFile in self.notesFiles:
                     judge = self.getJudgeName(notesFile)
-                    post.write("\n[b][size=4]{0}[/size][/b]\n[spoiler=Show Notes]".format(judge))
+                    post.write("\n[b]{0}.) {1}[/b]".format(counter,judge))
+                    counter += 1
+                post.write("\n")
+
+                # Write out notes for each judge in the set.
+                for notesFile in self.notesFiles:
+                    judge = self.getJudgeName(notesFile)
+                    post.write("\n[b][size=4]=== JUDGE: {0} ===[/size][/b]\n".format(judge))
                     with open(notesFile) as judgeFile:
                         for line in judgeFile:
                             line = line.strip()
@@ -104,7 +114,7 @@ class FormatNotes():
                                 post.write("\n"+formattedLine)
                             else:
                                 post.write("\n"+line)
-                        post.write("\n[/spoiler]\n")
+                        post.write("\n\n")
                     judgeFile.close()
             post.close()
             formatNotesLogger.info("printFormattedPost: Successfully wrote '%s'", self.setPostFile)

@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import codecs
 
 ###########
 # LOGGERS #
@@ -101,10 +102,10 @@ class JudgeNotes():
         judgeNotesLogger.info("getJudgeRatings: Parsing Judge Notes File")
         try:
             os.chdir(self.fileDir)  # Change to batch directory context
-            with open(self.notesFile) as judgeFile:
+            with open(self.notesFile, encoding="utf-8-sig") as judgeFile:
                 for line in judgeFile:
                     if line.startswith('['):
-                        self.getRatingWithInfo(line)                       
+                        self.getRatingWithInfo(line)
             judgeFile.close()
             self.numJudgedFiles = len(self.judgedSongList)
         except:
@@ -159,6 +160,7 @@ class JudgeNotes():
         - '$' (file is better than queued file)
         """
 
+        ratingLine = ratingLine.strip() # Get rid of whitespace first so curly brace check doesn't blow up
         ratingStepartist = re.search("^\[([\d]+\.?[\d]?)/10\](.*)\{(.*)\}[\s]*\((.*)\)$", ratingLine)
         ratingNoStepartist = re.search("^\[([\d]+\.?[\d]?)/10\](.*)\{(.*)\}$", ratingLine)
 
@@ -177,7 +179,7 @@ class JudgeNotes():
         try:
             # Retrieve song information from line.
             if ratingStepartist is not None:
-                judgeNotesLogger.debug("getRatingWithInfo: Found rating with stepartist")
+                judgeNotesLogger.debug("getRatingWithInfo: '" + ratingStepartist.group(2).strip() + "' Found rating with stepartist")
                 # ratingStepartist.group(0) # Full match
                 rating = ratingStepartist.group(1)  # Rating number itself
                 songInfo = [ratingStepartist.group(2).strip(),  # Song Title
@@ -187,7 +189,7 @@ class JudgeNotes():
                 self.judgedSongList.append(tupleToAdd)
                 return
             elif ratingNoStepartist is not None:
-                judgeNotesLogger.debug("getRatingWithInfo: Found rating without stepartist")
+                judgeNotesLogger.debug("getRatingWithInfo: '" + ratingNoStepartist.group(2).strip() + "' Found rating without stepartist")
                 # ratingNoStepartist.group(0) # Full Match
                 rating = ratingNoStepartist.group(1)  # Rating number itself
                 songInfo = [ratingNoStepartist.group(2).strip(),  # Song Title
@@ -715,7 +717,7 @@ class JudgesForExcel():
                                "of set '%s'", self.setName)
         try:
             os.chdir(self.path) # Change to set's directory context
-            with open(self.notesFiles[0]) as judgeFile:
+            with open(self.notesFiles[0], encoding="utf-8-sig") as judgeFile:
                 for line in judgeFile:
                     if line.startswith('['):
                         self.getSongWithStepartist(line)
@@ -795,7 +797,7 @@ class JudgesForExcel():
             fileToUse = self.judgeToFileName[judge]
             os.chdir(self.path)  # Change to set's directory context
             judgeRatings = []
-            with open(fileToUse) as judgeFile:
+            with open(fileToUse, encoding="utf-8-sig") as judgeFile:
                 for line in judgeFile:
                     if line.startswith('['):
                         parsedRating = self.getSimpleRating(line)
